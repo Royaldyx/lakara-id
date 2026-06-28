@@ -35,4 +35,4 @@ data/
 backups/
 
 # Scripts with credentials
-scripts/*.sh
+# scripts/
