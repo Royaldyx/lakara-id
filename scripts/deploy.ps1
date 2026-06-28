@@ -48,9 +48,25 @@ if (-not $ftpHost -or -not $ftpUser -or -not $ftpPass) {
     exit 1
 }
 
+# -- Step 0: npm install + build -----------------------------------------------
+if ($DryRun) {
+    Write-Host "    [DryRun] Would run npm install + npm run build in $ProjectRoot"
+} else {
+    Write-Host "==> Running npm install..."
+    Push-Location $ProjectRoot
+    & npm install
+    if ($LASTEXITCODE -ne 0) { Pop-Location; Write-Error "npm install failed"; exit 1 }
+
+    Write-Host "==> Running npm run build..."
+    & npm run build
+    if ($LASTEXITCODE -ne 0) { Pop-Location; Write-Error "npm run build failed"; exit 1 }
+    Pop-Location
+    Write-Host "    Build OK."
+}
+
 # -- Check .output -------------------------------------------------------------
 if (-not (Test-Path $OutputDir)) {
-    Write-Error ".output not found at $OutputDir - run 'npm run build' first."
+    Write-Error ".output not found after build - something went wrong."
     exit 1
 }
 
@@ -153,8 +169,11 @@ $remoteCmd += " && rm -rf .output"
 $remoteCmd += " && mkdir -p .output"
 $remoteCmd += " && unzip -o -qq $ZipName -d .output"
 $remoteCmd += " && rm -f $ZipName"
+$remoteCmd += " && source /home/lakaraid/nodevenv/lakara/22/bin/activate"
+$remoteCmd += " && npm install"
 $remoteCmd += " && mkdir -p tmp"
 $remoteCmd += " && touch tmp/restart.txt"
+$remoteCmd += " && curl -s https://lakara.id -o /dev/null"
 $remoteCmd += " && echo DEPLOY_OK"
 
 Write-Host ""
