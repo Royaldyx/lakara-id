@@ -1,0 +1,32 @@
+{
+  "home": {
+    "title": "Lakara — Jasa Website, Social Media & Talent Esports Indonesia",
+    "description": "Lakara Solusi Kreatif: jasa pembuatan website, kelola social media (SMM), Meta Ads, SEO, video TikTok, dan talent esports/host. Plus platform link bio & storefront gratis. Konsultasi gratis via WhatsApp.",
+    "og_image": "https://lakara.id/og-cover.png",
+    "canonical": "https://lakara.id"
+  },
+  "about": {
+    "title": "Tentang Lakara — Mitra Digital Terpercaya 50+ Klien",
+    "description": "PT Lakara Solusi Kreatif, agensi digital berpengalaman 5+ tahun melayani 50+ klien dari instansi pemerintah, BUMN, hingga UMKM. Tim in-house web development, marketing, dan esports.",
+    "og_image": "https://lakara.id/og-cover.png",
+    "canonical": "https://lakara.id/about"
+  },
+  "services": {
+    "title": "Layanan Lakara — Web Development, Digital Marketing & Esports",
+    "description": "Tiga divisi solusi digital: Lakara Creative (website & aplikasi), Lakara Marketing (SMM, Meta Ads, SEO, video TikTok), dan Lakara Talent (host & shoutcaster esports). Solusi all-in-one untuk bisnis Anda.",
+    "og_image": "https://lakara.id/og-cover.png",
+    "canonical": "https://lakara.id/services"
+  },
+  "pricing": {
+    "title": "Harga Lakara — Paket Website, SMM & SEO Transparan",
+    "description": "Harga jelas tanpa biaya tersembunyi. Website mulai Rp 500rb, SMM management mulai Rp 1.5jt/bulan, plus SEO, Meta Ads, & TikTok. Bayar tahunan hemat 15%. Konsultasi gratis.",
+    "og_image": "https://lakara.id/og-cover.png",
+    "canonical": "https://lakara.id/pricing"
+  },
+  "contact": {
+    "title": "Kontak Lakara — Konsultasi Digital Gratis via WhatsApp",
+    "description": "Hubungi tim Lakara untuk konsultasi gratis seputar website, social media, SEO, atau esports. Respons cepat 1–2 jam via WhatsApp. Tanpa komitmen, tanpa biaya konsultasi.",
+    "og_image": "https://lakara.id/og-cover.png",
+    "canonical": "https://lakara.id/contact"
+  }
+}

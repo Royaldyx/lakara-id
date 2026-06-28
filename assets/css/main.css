@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --color-primary: 51 88 255; /* #3358ff */
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Section spacing (raw CSS — tidak bergantung @apply) */
+.section {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+@media (min-width: 768px) {
+  .section {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+  }
+}
+
+/* Lakara accent gradient */
+.text-gradient {
+  background-image: linear-gradient(to right, #3358ff, #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ===== Link button animations (Premium) ===== */
+@keyframes lk-pulse  { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+@keyframes lk-shake  { 0%, 92%, 100% { transform: translateX(0); } 94% { transform: translateX(-4px); } 96% { transform: translateX(4px); } 98% { transform: translateX(-2px); } }
+@keyframes lk-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes lk-glow   { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.0); } 50% { box-shadow: 0 0 20px 2px rgba(255,255,255,0.45); } }
+
+.anim-pulse  { animation: lk-pulse  2s   ease-in-out infinite; }
+.anim-shake  { animation: lk-shake  3s   ease-in-out infinite; }
+.anim-bounce { animation: lk-bounce 2s   ease-in-out infinite; }
+.anim-glow   { animation: lk-glow   2.2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-pulse, .anim-shake, .anim-bounce, .anim-glow { animation: none; }
+}
+
+/* Sembunyikan scrollbar tapi tetap bisa di-scroll (untuk tab bar horizontal) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

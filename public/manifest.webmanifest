@@ -1,0 +1,26 @@
+{
+  "name": "Lakara — Link Bio & Storefront",
+  "short_name": "Lakara",
+  "description": "Bikin link bio & toko online dalam satu link. lakara.id/namatoko",
+  "id": "/",
+  "start_url": "/member/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#3358ff",
+  "lang": "id",
+  "dir": "ltr",
+  "categories": ["business", "productivity", "social"],
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" },
+    { "src": "/favicon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Dashboard", "url": "/member/dashboard" },
+    { "name": "Link Bio", "url": "/member/links" },
+    { "name": "Analitik", "url": "/member/analytics" }
+  ]
+}

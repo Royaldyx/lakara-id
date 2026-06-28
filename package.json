@@ -1,0 +1,25 @@
+{
+  "name": "lakara-nuxt",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "start": "node .output/server/index.mjs",
+    "preview": "nuxt preview",
+    "static": "nuxt generate"
+  },
+  "dependencies": {
+    "@iconify-json/tabler": "^1.2.5",
+    "@nuxt/ui": "^2.18.7",
+    "mysql2": "^3.22.5",
+    "nodemailer": "^6.9.0",
+    "nuxt": "^3.13.2",
+    "seq-queue": "^0.0.5",
+    "sqlstring": "^2.3.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vue-tsc": "^2.0.0"
+  }
+}
