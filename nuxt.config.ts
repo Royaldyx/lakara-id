@@ -9,7 +9,6 @@ export default defineNuxtConfig({
   },
 
   // WAJIB produksi: bundle icon lokal supaya tidak fetch CDN saat runtime SSR
-  // (mencegah error "failed to load icon 'tabler:...'" di server)
   icon: {
     serverBundle: 'local',
     clientBundle: { scan: true },
