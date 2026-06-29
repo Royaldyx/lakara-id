@@ -102,6 +102,53 @@
             </div>
           </div>
         </div>
+
+        <!-- Sumber kunjungan + Perangkat -->
+        <div class="grid md:grid-cols-2 gap-6 mt-6">
+          <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+            <h3 class="font-bold text-slate-900 mb-4">Sumber Kunjungan</h3>
+            <div v-if="!sources.length" class="text-sm text-slate-400 py-6 text-center">Belum ada data.</div>
+            <div v-else class="space-y-3">
+              <div v-for="s in sources" :key="s.source" class="space-y-1">
+                <div class="flex items-center justify-between text-sm gap-2">
+                  <span class="font-medium text-slate-700 flex items-center gap-2 min-w-0"><UIcon :name="sourceIcon(s.source)" class="w-4 h-4 text-slate-400 flex-shrink-0" /> <span class="truncate">{{ sourceLabel(s.source) }}</span></span>
+                  <span class="font-bold text-slate-900 flex-shrink-0">{{ s.total }}</span>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full" :style="{ width: (s.total / maxSource * 100) + '%' }" /></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+            <h3 class="font-bold text-slate-900 mb-4">Perangkat</h3>
+            <div v-if="!devices.length" class="text-sm text-slate-400 py-6 text-center">Belum ada data.</div>
+            <div v-else class="space-y-4">
+              <div v-for="d in devices" :key="d.device" class="flex items-center gap-3">
+                <UIcon :name="deviceIcon(d.device)" class="w-5 h-5 text-slate-400 flex-shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between text-sm mb-1"><span class="font-medium text-slate-700 capitalize">{{ d.device }}</span><span class="font-bold text-slate-900">{{ devicePct(d.total) }}%</span></div>
+                  <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-[#3358ff] rounded-full" :style="{ width: devicePct(d.total) + '%' }" /></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jam ramai -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm mt-6">
+          <h3 class="font-bold text-slate-900 mb-1">Jam Ramai</h3>
+          <p class="text-xs text-slate-400 mb-4">Waktu terbaik buat posting & bagikan link bio.</p>
+          <div v-if="!hasHourly" class="text-sm text-slate-400 py-6 text-center">Belum ada data.</div>
+          <template v-else>
+            <div class="flex items-end gap-0.5 h-28">
+              <div v-for="h in hourly" :key="h.hour" class="flex-1 flex flex-col justify-end">
+                <div class="w-full rounded-t bg-[#3358ff]/80 hover:bg-[#3358ff] transition-all" :style="{ height: Math.max(2, h.total / maxHour * 100) + '%' }" :title="`${h.hour}:00 — ${h.total}`" />
+              </div>
+            </div>
+            <div class="flex justify-between text-[10px] text-slate-400 mt-1.5"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+            <p v-if="peakHour !== null" class="text-xs text-slate-500 mt-3">⏰ Paling ramai sekitar jam <strong>{{ peakHour }}:00</strong></p>
+          </template>
+        </div>
       </template>
     </template>
   </div>
@@ -170,6 +217,44 @@ const maxLinkClicks = computed(() =>
   byLink.value.reduce((m: number, r: any) => Math.max(m, r.total), 0) || 1)
 
 const hasChartData = computed(() => (data.value?.daily || []).length > 0)
+
+// Sumber kunjungan
+const sources = computed<any[]>(() => data.value?.sources || [])
+const maxSource = computed(() => sources.value.reduce((m, s) => Math.max(m, s.total), 0) || 1)
+const sourceLabel = (s: string) => s === 'direct' ? 'Langsung / lainnya' : s
+const sourceIcon = (s: string) => {
+  if (s.includes('instagram')) return 'i-tabler-brand-instagram'
+  if (s.includes('tiktok')) return 'i-tabler-brand-tiktok'
+  if (s.includes('youtube') || s.includes('youtu.be')) return 'i-tabler-brand-youtube'
+  if (s.includes('facebook') || s.includes('fb.')) return 'i-tabler-brand-facebook'
+  if (s.includes('google')) return 'i-tabler-brand-google'
+  if (s.includes('whatsapp') || s.includes('wa.me')) return 'i-tabler-brand-whatsapp'
+  if (s.includes('t.co') || s.includes('twitter') || s.includes('x.com')) return 'i-tabler-brand-x'
+  if (s.includes('telegram') || s.includes('t.me')) return 'i-tabler-brand-telegram'
+  if (s === 'direct') return 'i-tabler-link'
+  return 'i-tabler-world'
+}
+
+// Perangkat
+const devices = computed<any[]>(() => data.value?.devices || [])
+const deviceTotal = computed(() => devices.value.reduce((a, d) => a + d.total, 0) || 1)
+const devicePct = (n: number) => Math.round(n / deviceTotal.value * 100)
+const deviceIcon = (d: string) =>
+  d === 'mobile' ? 'i-tabler-device-mobile'
+  : d === 'tablet' ? 'i-tabler-device-tablet'
+  : d === 'desktop' ? 'i-tabler-device-desktop'
+  : 'i-tabler-device-unknown'
+
+// Jam ramai
+const hourly = computed<any[]>(() => data.value?.hourly || [])
+const maxHour = computed(() => hourly.value.reduce((m, h) => Math.max(m, h.total), 0) || 1)
+const hasHourly = computed(() => hourly.value.some(h => h.total > 0))
+const peakHour = computed(() => {
+  if (!hasHourly.value) return null
+  let best = hourly.value[0]
+  for (const h of hourly.value) if (h.total > best.total) best = h
+  return best.hour
+})
 
 // SVG chart geometry
 const chartW = 700, chartH = 220

@@ -231,8 +231,11 @@
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <button v-for="t in templates" :key="t.key" @click="applyTemplate(t)"
-            class="rounded-xl border-2 overflow-hidden text-left transition-all"
+            class="rounded-xl border-2 overflow-hidden text-left transition-all relative"
             :class="form.template === t.key ? 'border-[#3358ff] ring-2 ring-[#3358ff]/20' : 'border-slate-200 hover:border-slate-300'">
+            <span v-if="t.premium && tier !== 'premium'" class="absolute top-1.5 right-1.5 z-10 text-[9px] font-bold bg-amber-400 text-amber-950 px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5">
+              <UIcon name="i-tabler-crown" class="w-2.5 h-2.5" /> PREMIUM
+            </span>
             <div class="h-16 flex flex-col items-center justify-center gap-1" :style="templatePreviewBg(t)">
               <span class="text-[11px] font-bold leading-none" :style="{ ...getFontStyle(t.font_family), color: t.title_color }">Aa</span>
               <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-md" :style="templatePreviewBtn(t)">Link</span>
@@ -612,6 +615,11 @@ const templates = [
   { key: 'forest',    label: 'Forest',           font_family: 'josefin',      bg_type: 'gradient', gradient_from: '#0b3d2e', gradient_to: '#1f8a5b', gradient_angle: 135, bg_color: '#0b3d2e', title_color: '#ffffff', bio_color: '#bbf7d0', button_color: '#7CFFB2', button_text_color: '#06281b', card_style: 'ghost',   card_radius: 'lg'   },
   { key: 'elegant',   label: 'Elegant Serif',    font_family: 'playfair',     bg_type: 'gradient', gradient_from: '#1a1410', gradient_to: '#3d2c1e', gradient_angle: 160, bg_color: '#1a1410', title_color: '#f5e9d6', bio_color: '#cbb89a', button_color: '#d4af37', button_text_color: '#1a1410', card_style: 'outline', card_radius: 'sm'   },
   { key: 'candy',     label: 'Candy Pop',        font_family: 'pacifico',     bg_type: 'gradient', gradient_from: '#ff9a9e', gradient_to: '#fecfef', gradient_angle: 135, bg_color: '#ffe0ec', title_color: '#9d174d', bio_color: '#be185d', button_color: '#ec4899', button_text_color: '#ffffff', card_style: 'filled',  card_radius: 'full' },
+  // ── Premium-only templates (upsell) ──
+  { key: 'aurora',    label: 'Aurora',           premium: true, font_family: 'spacegrotesk', bg_type: 'gradient', gradient_from: '#5b247a', gradient_to: '#1bcedf', gradient_angle: 135, bg_color: '#5b247a', title_color: '#ffffff', bio_color: '#e0d4ff', button_color: '#ffffff', button_text_color: '#5b247a', card_style: 'filled',  card_radius: 'full' },
+  { key: 'luxe',      label: 'Luxe Gold',        premium: true, font_family: 'cinzel',       bg_type: 'solid',    gradient_from: '#000000', gradient_to: '#1a1a1a', gradient_angle: 135, bg_color: '#0a0a0a', title_color: '#e8c87a', bio_color: '#c9a85f', button_color: '#e8c87a', button_text_color: '#0a0a0a', card_style: 'outline', card_radius: 'sm'   },
+  { key: 'glass',     label: 'Glassmorphism',    premium: true, font_family: 'dmsans',       bg_type: 'gradient', gradient_from: '#a1c4fd', gradient_to: '#c2e9fb', gradient_angle: 135, bg_color: '#a1c4fd', title_color: '#0f172a', bio_color: '#334155', button_color: '#ffffff', button_text_color: '#0f172a', card_style: 'ghost',   card_radius: 'lg'   },
+  { key: 'retrowave', label: 'Retro Wave',       premium: true, font_family: 'bebasneue',    bg_type: 'gradient', gradient_from: '#fc466b', gradient_to: '#3f5efb', gradient_angle: 160, bg_color: '#3f5efb', title_color: '#ffffff', bio_color: '#ffd6e0', button_color: '#fde047', button_text_color: '#3b0764', card_style: 'filled',  card_radius: 'md'   },
 ]
 
 function templatePreviewBg(t: any) {
@@ -625,6 +633,10 @@ function templatePreviewBtn(t: any) {
 }
 
 function applyTemplate(t: any) {
+  if (t.premium && tier.value !== 'premium') {
+    showToast(`Template "${t.label}" khusus Premium — upgrade untuk pakai`, 'error')
+    return
+  }
   form.bg_type = t.bg_type
   form.bg_color = t.bg_color
   form.gradient_from = t.gradient_from

@@ -1,4 +1,5 @@
 import { execute } from '~/server/utils/db'
+import { refSource, detectDevice } from '~/server/utils/analytics'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -9,10 +10,13 @@ export default defineEventHandler(async (event) => {
     return { ok: false }
   }
 
+  const referrer = refSource(body.ref)
+  const device   = detectDevice(getHeader(event, 'user-agent'))
+
   try {
     await execute(
-      'INSERT INTO link_clicks (store_id, link_id) VALUES (?, ?)',
-      [store_id, link_id]
+      'INSERT INTO link_clicks (store_id, link_id, referrer, device) VALUES (?, ?, ?, ?)',
+      [store_id, link_id, referrer, device]
     )
   } catch {
     // silently ignore errors — click tracking should never break the page

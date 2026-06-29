@@ -1,6 +1,6 @@
 import { slugify } from '~/server/utils/data'
 import { hashPassword } from '~/server/utils/member'
-import { queryOne, execute } from '~/server/utils/db'
+import { queryOne, withTransaction } from '~/server/utils/db'
 import { checkRateLimit, resetAttempts } from '~/server/utils/rateLimit'
 import { sendVerificationEmail } from '~/server/utils/verification'
 
@@ -48,22 +48,26 @@ export default defineEventHandler(async (event) => {
     if (referrer) referredBy = referrer.id
   }
 
-  await execute(
-    `INSERT INTO stores
-     (id, slug, name, tagline, description, logo, primary_color, active, member_active,
-      member_email, member_password, instagram, tiktok, whatsapp, youtube, why_buy, products, referred_by)
-     VALUES (?, ?, ?, '', ?, '', '#3358ff', 1, 1, ?, ?, '', '', '', '', '[]', '[]', ?)`,
-    [storeId, slug, store_name.trim(), description?.trim() || '',
-     email.trim().toLowerCase(), passwordHash, referredBy]
-  )
+  // Atomic: buat store + pending_members bareng. Kalau salah satu gagal, rollback
+  // (cegah store nyangkut tanpa record member, atau sebaliknya).
+  await withTransaction(async (tx) => {
+    await tx.execute(
+      `INSERT INTO stores
+       (id, slug, name, tagline, description, logo, primary_color, active, member_active,
+        member_email, member_password, instagram, tiktok, whatsapp, youtube, why_buy, products, referred_by)
+       VALUES (?, ?, ?, '', ?, '', '#3358ff', 1, 1, ?, ?, '', '', '', '', '[]', '[]', ?)`,
+      [storeId, slug, store_name.trim(), description?.trim() || '',
+       email.trim().toLowerCase(), passwordHash, referredBy]
+    )
 
-  await execute(
-    `INSERT INTO pending_members
-     (id, name, email, password_hash, store_name, store_slug, description, message, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'auto_approved')`,
-    [storeId, name.trim(), email.trim().toLowerCase(), passwordHash,
-     store_name.trim(), slug, description?.trim() || '', message?.trim() || '']
-  )
+    await tx.execute(
+      `INSERT INTO pending_members
+       (id, name, email, password_hash, store_name, store_slug, description, message, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'auto_approved')`,
+      [storeId, name.trim(), email.trim().toLowerCase(), passwordHash,
+       store_name.trim(), slug, description?.trim() || '', message?.trim() || '']
+    )
+  })
 
   // Kirim email verifikasi (akun belum bisa login sebelum diverifikasi)
   let emailSent = false

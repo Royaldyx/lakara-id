@@ -1,5 +1,6 @@
 import { queryOne } from '~/server/utils/db'
-import { hashPassword, createPortalSession, logActivity } from '~/server/utils/portal'
+import { createPortalSession, logActivity } from '~/server/utils/portal'
+import { hashPassword } from '~/server/utils/member'
 import { checkRateLimit, recordFailedAttempt, resetAttempts } from '~/server/utils/rateLimit'
 
 export default defineEventHandler(async (event) => {

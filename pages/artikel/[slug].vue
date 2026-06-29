@@ -264,12 +264,16 @@ const jsonLd = computed(() => {
     '@graph': [
       {
         '@type': 'Article',
-        headline: a.title,
+        headline: (a.title || '').slice(0, 110),
         description: a.excerpt,
-        image: a.og_image || a.image || undefined,
+        image: [a.og_image || a.image || 'https://lakara.id/og-cover.png'],
         datePublished: a.created_at,
         dateModified: a.updated_at || a.created_at,
-        author: { '@type': 'Person', name: a.author || 'Tim Lakara' },
+        author: {
+          '@type': 'Organization',
+          name: a.author || 'Tim Lakara',
+          url: 'https://lakara.id/about',
+        },
         publisher: {
           '@type': 'Organization',
           name: 'PT Lakara Solusi Kreatif',

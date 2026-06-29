@@ -1,6 +1,5 @@
 import { randomBytes } from 'crypto'
 import { query, queryOne, execute } from '~/server/utils/db'
-import { hashPassword } from '~/server/utils/member'
 import { sendEmail } from '~/server/utils/email'
 
 const escHtmlPortal = (s: string) =>
@@ -204,5 +203,3 @@ export async function destroyPortalSession(event: any) {
   if (token) await execute('DELETE FROM portal_sessions WHERE token = ?', [token])
   deleteCookie(event, SESSION_COOKIE, { path: '/' })
 }
-
-export { hashPassword }

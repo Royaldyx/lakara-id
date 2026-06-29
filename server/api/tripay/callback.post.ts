@@ -1,5 +1,5 @@
 import { verifyCallbackSignature } from '~/server/utils/tripay'
-import { queryOne, execute } from '~/server/utils/db'
+import { queryOne, execute, withTransaction } from '~/server/utils/db'
 import { useRuntimeConfig } from '#imports'
 
 export default defineEventHandler(async (event) => {
@@ -57,14 +57,12 @@ export default defineEventHandler(async (event) => {
     [payment.store_id, merchant_ref],
   )
 
-  // Update status payment ke paid (selalu dicatat)
-  await execute(
-    "UPDATE payments SET status = 'paid', tripay_ref = ?, paid_at = NOW(), updated_at = NOW() WHERE id = ?",
-    [reference || null, merchant_ref],
-  )
-
+  // Double-payment terdeteksi — cukup catat paid, skip tier upgrade
   if (recentOtherPaid) {
-    // Double-payment terdeteksi — tier sudah diupgrade oleh payment sebelumnya
+    await execute(
+      "UPDATE payments SET status = 'paid', tripay_ref = ?, paid_at = NOW(), updated_at = NOW() WHERE id = ?",
+      [reference || null, merchant_ref],
+    )
     console.warn(`[Callback] Double-payment guard: store ${payment.store_id} — payment ${recentOtherPaid.id} baru saja dibayar. Melewati tier upgrade untuk ${merchant_ref}.`)
     return { success: true }
   }
@@ -74,14 +72,20 @@ export default defineEventHandler(async (event) => {
   const baseDate = (store?.tier_expires_at && new Date(store.tier_expires_at) > new Date())
     ? new Date(store.tier_expires_at)
     : new Date()
-
   baseDate.setMonth(baseDate.getMonth() + Number(payment.months || 1))
 
-  // Upgrade tier member
-  await execute(
-    'UPDATE stores SET product_tier = ?, tier_started_at = NOW(), tier_expires_at = ? WHERE id = ?',
-    [payment.tier_type, baseDate, payment.store_id],
-  )
+  // ATOMIC: tandai paid + upgrade tier bareng. Kalau salah satu gagal → rollback,
+  // Tripay retry callback → diproses ulang utuh. Cegah "udah bayar tapi tier nggak naik".
+  await withTransaction(async (tx) => {
+    await tx.execute(
+      "UPDATE payments SET status = 'paid', tripay_ref = ?, paid_at = NOW(), updated_at = NOW() WHERE id = ?",
+      [reference || null, merchant_ref],
+    )
+    await tx.execute(
+      'UPDATE stores SET product_tier = ?, tier_started_at = NOW(), tier_expires_at = ? WHERE id = ?',
+      [payment.tier_type, baseDate, payment.store_id],
+    )
+  })
 
   // ── Referral reward: pembayaran pertama referee → +1 bln Pro utk kedua pihak ──
   try {

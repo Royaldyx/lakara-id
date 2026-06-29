@@ -1,5 +1,6 @@
 import { queryOne, execute } from '~/server/utils/db'
-import { requireSuperAdmin, genId, hashPassword, logActivity } from '~/server/utils/portal'
+import { requireSuperAdmin, genId, logActivity } from '~/server/utils/portal'
+import { hashPassword } from '~/server/utils/member'
 
 export default defineEventHandler(async (event) => {
   const admin = await requireSuperAdmin(event)

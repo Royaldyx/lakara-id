@@ -1,5 +1,6 @@
 import { queryOne, execute } from '~/server/utils/db'
-import { requireAdmin, genId, hashPassword, logActivity } from '~/server/utils/portal'
+import { requireAdmin, genId, logActivity } from '~/server/utils/portal'
+import { hashPassword } from '~/server/utils/member'
 
 const ROLES = ['staff', 'freelancer']
 

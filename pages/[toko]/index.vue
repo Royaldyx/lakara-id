@@ -456,7 +456,7 @@ function trackClick(link: any) {
   if (!store.value?.id || !link?.id) return
   $fetch('/api/public/record-click', {
     method: 'POST',
-    body:   { store_id: store.value.id, link_id: link.id },
+    body:   { store_id: store.value.id, link_id: link.id, ref: document.referrer },
   }).catch(() => {})
 }
 
@@ -465,7 +465,7 @@ onMounted(() => {
   if (!store.value?.id) return
   $fetch('/api/public/record-view', {
     method: 'POST',
-    body:   { store_id: store.value.id },
+    body:   { store_id: store.value.id, ref: document.referrer },
   }).catch(() => {})
 })
 </script>

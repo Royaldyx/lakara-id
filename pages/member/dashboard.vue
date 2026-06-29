@@ -26,6 +26,24 @@
       </span>
     </div>
 
+    <!-- Pro-conversion nudge (hanya free tier) -->
+    <NuxtLink v-if="store && isFree" to="/member/upgrade"
+      class="block rounded-2xl p-5 mb-8 bg-gradient-to-br from-amber-400 to-orange-500 text-white hover:shadow-lg transition-all group">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0"><UIcon name="i-tabler-crown" class="w-5 h-5" /></div>
+        <div class="min-w-0 flex-1">
+          <h2 class="font-bold">Upgrade ke Pro — buka semua fitur 🔓</h2>
+          <p class="text-xs text-white/90 mt-0.5">Kamu masih di paket <strong>Free</strong>. Unlock fitur ini:</p>
+          <div class="flex flex-wrap gap-1.5 mt-2.5">
+            <span v-for="f in lockedPerks" :key="f" class="text-[11px] bg-white/20 rounded-full px-2.5 py-1 font-medium">{{ f }}</span>
+          </div>
+          <span class="inline-flex items-center gap-1 mt-3 bg-white text-orange-600 text-xs font-bold px-4 py-2 rounded-xl group-hover:gap-2 transition-all">
+            Lihat Paket <UIcon name="i-tabler-arrow-right" class="w-3.5 h-3.5" />
+          </span>
+        </div>
+      </div>
+    </NuxtLink>
+
     <!-- Onboarding checklist (sembunyi otomatis kalau sudah lengkap) -->
     <div v-if="store && !onboarding.done" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-8">
       <div class="flex items-center justify-between gap-3 mb-1">
@@ -173,6 +191,17 @@ onMounted(async () => {
 })
 
 const showDone = ref(true)
+
+// Free tier? (pro/premium yang sudah expired dianggap free)
+const isFree = computed(() => {
+  const s = store.value
+  if (!s) return false
+  const tier = s.product_tier || 'free'
+  if (tier === 'free') return true
+  if (s.tier_expires_at && new Date(s.tier_expires_at) < new Date()) return true
+  return false
+})
+const lockedPerks = ['Link tanpa batas', 'Font kustom', 'Analitik klik', 'Upload gambar & GIF', 'Animasi tombol', 'Verified badge', 'Hapus branding Lakara']
 
 const onboarding = computed(() => {
   const s = store.value || {}

@@ -1,4 +1,5 @@
 import { execute } from '~/server/utils/db'
+import { refSource, detectDevice } from '~/server/utils/analytics'
 
 // Sentinel link_id untuk mencatat kunjungan halaman bio (page view).
 // Disimpan di tabel link_clicks agar tidak perlu migrasi tabel baru.
@@ -12,10 +13,13 @@ export default defineEventHandler(async (event) => {
     return { ok: false }
   }
 
+  const referrer = refSource(body.ref)
+  const device   = detectDevice(getHeader(event, 'user-agent'))
+
   try {
     await execute(
-      'INSERT INTO link_clicks (store_id, link_id) VALUES (?, ?)',
-      [store_id, PAGE_VIEW_ID]
+      'INSERT INTO link_clicks (store_id, link_id, referrer, device) VALUES (?, ?, ?, ?)',
+      [store_id, PAGE_VIEW_ID, referrer, device]
     )
   } catch {
     // silently ignore — tracking tidak boleh merusak halaman publik

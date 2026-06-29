@@ -76,6 +76,40 @@ export default defineEventHandler(async (event) => {
     [PAGE_VIEW_ID, PAGE_VIEW_ID, store.id, dailyDays]
   )
 
+  // --- Top traffic source (dari page view) ---
+  const sourceRows = await query<{ source: string; total: number }>(
+    `SELECT COALESCE(NULLIF(referrer, ''), 'direct') AS source, COUNT(*) AS total
+     FROM link_clicks
+     WHERE store_id = ? AND link_id = ?
+       AND clicked_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+     GROUP BY source ORDER BY total DESC LIMIT 8`,
+    [store.id, PAGE_VIEW_ID, days]
+  )
+
+  // --- Breakdown device (dari page view) ---
+  const deviceRows = await query<{ device: string; total: number }>(
+    `SELECT COALESCE(NULLIF(device, ''), 'unknown') AS device, COUNT(*) AS total
+     FROM link_clicks
+     WHERE store_id = ? AND link_id = ?
+       AND clicked_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+     GROUP BY device ORDER BY total DESC`,
+    [store.id, PAGE_VIEW_ID, days]
+  )
+
+  // --- Jam ramai (semua aktivitas klik + view, per jam 0-23) ---
+  const hourRows = await query<{ h: number; total: number }>(
+    `SELECT HOUR(clicked_at) AS h, COUNT(*) AS total
+     FROM link_clicks
+     WHERE store_id = ?
+       AND clicked_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+     GROUP BY h`,
+    [store.id, days]
+  )
+  const hourly = Array.from({ length: 24 }, (_, h) => ({
+    hour: h,
+    total: Number(hourRows.find(r => Number(r.h) === h)?.total || 0),
+  }))
+
   const pct = (now: number, prev: number) =>
     prev === 0 ? (now > 0 ? 100 : 0) : Math.round(((now - prev) / prev) * 100)
 
@@ -97,5 +131,8 @@ export default defineEventHandler(async (event) => {
       clicks: Number(r.clicks),
       views:  Number(r.views),
     })),
+    sources: sourceRows.map(r => ({ source: r.source, total: Number(r.total) })),
+    devices: deviceRows.map(r => ({ device: r.device, total: Number(r.total) })),
+    hourly,
   }
 })

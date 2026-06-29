@@ -6,6 +6,8 @@ import { deleteOrphanUploads } from '~/server/utils/uploads'
 const VALID_TEMPLATES = [
   'none', 'gaming', 'minimal', 'gradient', 'pastel', 'neon', 'business',
   'sunset', 'ocean', 'midnight', 'vaporwave', 'forest', 'elegant', 'candy',
+  // premium-only
+  'aurora', 'luxe', 'glass', 'retrowave',
 ]
 const VALID_BG_TYPES = ['solid', 'gradient', 'image', 'video']
 const VALID_FONTS = [
