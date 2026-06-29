@@ -8,6 +8,7 @@
       <Meta property="og:image" :content="artikel.og_image || artikel.image || ''" />
       <Meta property="og:type" content="article" />
       <Link v-if="artikel.canonical" rel="canonical" :href="artikel.canonical" />
+      <Script v-if="jsonLd" type="application/ld+json">{{ jsonLd }}</Script>
     </Head>
 
     <!-- Hero artikel -->
@@ -253,6 +254,40 @@ const moreArtikel = computed(() =>
 
 const copied  = ref(false)
 const pageUrl = computed(() => `https://lakara.id/artikel/${slug.value}`)
+
+// ===== Structured data: Article + Breadcrumb (JSON-LD string, untuk rich results Google) =====
+const jsonLd = computed(() => {
+  const a = artikel.value
+  if (!a) return ''
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Article',
+        headline: a.title,
+        description: a.excerpt,
+        image: a.og_image || a.image || undefined,
+        datePublished: a.created_at,
+        dateModified: a.updated_at || a.created_at,
+        author: { '@type': 'Person', name: a.author || 'Tim Lakara' },
+        publisher: {
+          '@type': 'Organization',
+          name: 'PT Lakara Solusi Kreatif',
+          logo: { '@type': 'ImageObject', url: 'https://lakara.id/apple-touch-icon.png' },
+        },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl.value },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://lakara.id/' },
+          { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://lakara.id/artikel' },
+          { '@type': 'ListItem', position: 3, name: a.title, item: pageUrl.value },
+        ],
+      },
+    ],
+  })
+})
 
 function formatDate(val: string) {
   if (!val) return ''

@@ -652,7 +652,7 @@ Diload via `app.head.script` di `nuxt.config.ts` + `plugins/analytics.client.ts`
 - **robots.txt:** `server/routes/robots.txt.ts` (custom) — disallow /admin /member /client /api + baris Sitemap. ✅ ADA.
 - **Product JSON-LD** di `pages/[toko]/[produk].vue` (sejak awal). ✅ ADA.
 - **Meta SEO:** `useSeoPage` (editable dari admin via `/api/seo`) + `<Head>` per halaman dinamis. ✅ ADA.
-- **Organization/WebSite + Article/Breadcrumb JSON-LD:** ⬜ BELUM (sempat ditambah lalu di-revert saat debugging). Bisa dipasang ulang kapan saja via `useHead` script `application/ld+json` (zero-dep, aman di Nuxt 3.21).
+- **Organization/WebSite JSON-LD:** ✅ ADA — global di `app.vue` (`useHead` script ld+json, hanya halaman resmi Lakara, bukan toko). **Article + Breadcrumb JSON-LD:** ✅ ADA — `pages/artikel/[slug].vue` (computed `jsonLd` string + `<Script type="application/ld+json">`). Zero-dep, aman di Nuxt 3.21.
 
 **Kalau mau pasang modul Nuxt SEO di masa depan:** sekarang udah di Nuxt 3.21 jadi modul Nuxt SEO modern KOMPATIBEL — tapi tetap **og-image jangan diaktifkan** (berat di shared cPanel), dan **commit lockfile** tiap habis nambah dep.
 
