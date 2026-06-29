@@ -27,6 +27,7 @@ export default defineEventHandler(async (event) => {
     { loc: '/about',      priority: '0.7', changefreq: 'monthly' },
     { loc: '/contact',    priority: '0.7', changefreq: 'monthly' },
     { loc: '/kalkulator', priority: '0.6', changefreq: 'monthly' },
+    { loc: '/showcase',   priority: '0.6', changefreq: 'weekly' },
   ]
 
   // Dynamic: portfolio (masih flat-file)

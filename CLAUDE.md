@@ -21,8 +21,8 @@ Fitur utama:
 
 | Layer | Teknologi |
 |---|---|
-| Framework | **Nuxt 3.13.2** (SSR + Nitro) |
-| UI | **@nuxt/ui 2.18.7** (Tailwind CSS built-in) |
+| Framework | **Nuxt 3.21.6** (SSR + Nitro) — naik dari 3.13.2 (Juni 2026, lihat catatan deps di bawah) |
+| UI | **@nuxt/ui 2.22.3** (Tailwind CSS built-in) |
 | Icons | `@iconify-json/tabler` + `@nuxt/icon` |
 | Database | **MySQL** via `mysql2` (pool) |
 | Email | `nodemailer` (SMTP) |
@@ -32,15 +32,17 @@ Fitur utama:
 | Hosting | **Arenhost cPanel** — Node.js App (Passenger), Node 22.x |
 | Build | **Windows only** (oxc-parser native binding tidak support Linux) |
 
+> **⚠️ DEPS — BACA SEBELUM UTAK-ATIK (Juni 2026):** project dulu di Nuxt 3.13.2, tapi `package-lock.json` lama hilang → `npm install` narik transitive-deps versi 2026 yang **nggak kompatibel sama Nitro 2.13.4 (Nuxt 3.13)** → build gagal `esbuild Transform failed: Unexpected "/"`. SOLUSI: **naik ke Nuxt 3.21.6 + @nuxt/ui 2.22.3** (build & runtime OK tanpa modul SEO). **`package-lock.json` SUDAH DI-COMMIT — JANGAN dihapus.** Kalau reinstall, pakai **`npm ci`** (bukan `npm install`) biar persis dari lockfile, anti-drift. `nuxt` & `@nuxt/ui` di-pin EXACT (tanpa caret).
+
 **Dependencies (`package.json`):**
 ```json
 {
   "dependencies": {
     "@iconify-json/tabler": "^1.2.5",
-    "@nuxt/ui": "^2.18.7",
+    "@nuxt/ui": "2.22.3",
     "mysql2": "^3.22.5",
     "nodemailer": "^6.9.0",
-    "nuxt": "^3.13.2",
+    "nuxt": "3.21.6",
     "seq-queue": "^0.0.5",
     "sqlstring": "^2.3.3"
   }
@@ -640,9 +642,19 @@ Diload via `app.head.script` di `nuxt.config.ts` + `plugins/analytics.client.ts`
 
 ---
 
-## 16. Sitemap
+## 16. Sitemap & SEO (manual, tanpa modul)
 
-Auto-generate di `server/routes/sitemap.xml.ts` — termasuk semua slug toko aktif.
+> **⚠️ PELAJARAN BESAR Juni 2026 (deps drift + upgrade Nuxt):** coba pasang modul `@nuxtjs/seo` → karena `package.json` pakai caret longgar + `package-lock.json` lama hilang, `npm install` narik versi 2026 yang nggak cocok Nitro 2.13.4 (Nuxt 3.13) → build gagal `esbuild Transform failed: Unexpected "/"`. Setelah eliminasi panjang (bukan icon/minify/spasi-path/source), akar = **transitive-deps fresh terlalu baru utk Nuxt 3.13**. **RESOLUSI: naik ke Nuxt 3.21.6 + @nuxt/ui 2.22.3** (build & runtime OK), **modul SEO Nuxt SEO DIBUANG** (penyebab 500 awal). `package-lock.json` (480KB) **SUDAH DI-COMMIT** — itu kunci anti-drift. Reinstall WAJIB pakai **`npm ci`** (bukan `npm install`).
+
+**Pendekatan SEO sekarang = manual, zero dependency** (aman, nggak gantung ke modul):
+
+- **Sitemap:** `server/routes/sitemap.xml.ts` (custom) — static pages + artikel/portfolio (flat-file) + toko/produk (MySQL `stores`). URL: `https://lakara.id/sitemap.xml`. ✅ ADA.
+- **robots.txt:** `server/routes/robots.txt.ts` (custom) — disallow /admin /member /client /api + baris Sitemap. ✅ ADA.
+- **Product JSON-LD** di `pages/[toko]/[produk].vue` (sejak awal). ✅ ADA.
+- **Meta SEO:** `useSeoPage` (editable dari admin via `/api/seo`) + `<Head>` per halaman dinamis. ✅ ADA.
+- **Organization/WebSite + Article/Breadcrumb JSON-LD:** ⬜ BELUM (sempat ditambah lalu di-revert saat debugging). Bisa dipasang ulang kapan saja via `useHead` script `application/ld+json` (zero-dep, aman di Nuxt 3.21).
+
+**Kalau mau pasang modul Nuxt SEO di masa depan:** sekarang udah di Nuxt 3.21 jadi modul Nuxt SEO modern KOMPATIBEL — tapi tetap **og-image jangan diaktifkan** (berat di shared cPanel), dan **commit lockfile** tiap habis nambah dep.
 
 ---
 
