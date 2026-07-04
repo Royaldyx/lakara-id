@@ -16,6 +16,24 @@
     <div class="grid lg:grid-cols-3 gap-6">
       <!-- Main -->
       <div class="lg:col-span-2 space-y-5">
+        <!-- Import cepat dari Shopee — DISEMBUNYIKAN dari member (dipakai admin via bookmarklet).
+             Set kondisi ke true kalau mau tampilkan lagi ke member. -->
+        <div v-if="false" class="bg-gradient-to-br from-orange-50 to-white rounded-2xl border border-orange-100 p-5 space-y-3">
+          <div class="flex items-center gap-2">
+            <UIcon name="i-tabler-shopping-bag" class="w-5 h-5 text-orange-500" />
+            <p class="text-sm font-bold text-slate-900">Import cepat dari Shopee</p>
+          </div>
+          <p class="text-xs text-slate-400">Tempel link <strong>1 produk</strong> Shopee → dibantu isi otomatis. Kadang gagal (Shopee anti-bot), tinggal lengkapi manual.</p>
+          <div class="flex gap-2">
+            <UInput v-model="importUrl" placeholder="https://shopee.co.id/...-i.xxx.yyy" class="flex-1" @keyup.enter="importFromShopee" />
+            <button @click="importFromShopee" :disabled="importing || !importUrl" type="button"
+              class="px-4 py-2 bg-orange-500 text-white text-sm font-bold rounded-xl hover:bg-orange-600 disabled:opacity-50 flex items-center gap-1.5 whitespace-nowrap">
+              <UIcon :name="importing ? 'i-tabler-loader-2' : 'i-tabler-download'" class="w-4 h-4" :class="importing ? 'animate-spin' : ''" /> Import
+            </button>
+          </div>
+          <p v-if="importMsg" class="text-xs font-medium" :class="importOk ? 'text-green-600' : 'text-amber-600'">{{ importMsg }}</p>
+        </div>
+
         <div class="bg-white rounded-2xl border border-slate-100 p-6 space-y-5">
           <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Informasi Produk</p>
           <UFormGroup label="Nama Produk *">
@@ -315,6 +333,46 @@ function toggleFeatured(key: string) {
   form.marketplace_featured.push(key)
 }
 
+// Import cepat dari Shopee (best-effort)
+const importUrl = ref('')
+const importing  = ref(false)
+const importMsg  = ref('')
+const importOk   = ref(false)
+
+// Isi form dari data import (dipakai server-import & bookmarklet)
+function applyImport(d: any) {
+  if (!d) return
+  if (d.name) { form.name = String(d.name); if (!slugManual.value) form.slug = slugify(String(d.name)) }
+  if (d.description) form.description = String(d.description)
+  if (d.price) form.price = Number(d.price) || 0
+  if (d.price_original) form.price_original = Number(d.price_original) || 0
+  if (Array.isArray(d.images)) for (const u of d.images) if (u && !form.images.includes(u)) form.images.push(u)
+  if (d.shopee_url) form.marketplace.shopee = String(d.shopee_url)
+  if (d.rating && !form.reviews.rating) form.reviews.rating = Number(d.rating) || 0
+}
+
+async function importFromShopee() {
+  if (!importUrl.value.trim()) return
+  importing.value = true; importMsg.value = ''
+  try {
+    const res = await $fetch<any>('/api/member/import-product', { method: 'POST', body: { url: importUrl.value.trim() } })
+    if (res.ok && res.data) {
+      applyImport(res.data)
+      importOk.value = true
+      importMsg.value = '✓ Berhasil di-import! Cek & rapikan datanya, lalu Simpan.'
+      importUrl.value = ''
+    } else {
+      importOk.value = false
+      importMsg.value = res.message || 'Gagal import — pakai cara Bookmarklet (lebih ampuh) atau isi manual.'
+    }
+  } catch (e: any) {
+    importOk.value = false
+    importMsg.value = e?.data?.statusMessage || 'Gagal import — pakai cara Bookmarklet atau isi manual.'
+  } finally {
+    importing.value = false
+  }
+}
+
 const slugManual  = ref(false)
 const saving      = ref(false)
 const errors      = ref<string[]>([])
@@ -348,6 +406,14 @@ watchEffect(() => {
 
 onMounted(async () => {
   if (!store.value) await fetchStore()
+  // Import via bookmarklet: ?shopee_import=<json>
+  if (!isEdit.value && route.query.shopee_import) {
+    try {
+      applyImport(JSON.parse(decodeURIComponent(route.query.shopee_import as string)))
+      importOk.value = true
+      importMsg.value = '✓ Data dari Shopee ke-import (via bookmarklet)! Cek & rapikan, lalu Simpan.'
+    } catch { /* ignore */ }
+  }
 })
 
 const slugify = (s: string) => s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '')

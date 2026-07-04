@@ -2,7 +2,8 @@
   <div class="flex min-h-screen bg-slate-50">
 
     <!-- Mobile top bar -->
-    <div class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-100 px-4 h-14 flex items-center justify-between shadow-sm">
+    <div class="mbr-topbar lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-100 shadow-sm">
+      <div class="px-4 h-14 flex items-center justify-between">
       <NuxtLink to="/member/profile" @click="sidebarOpen = false" class="flex items-center gap-2.5" title="Edit profil">
         <div class="w-7 h-7 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center"
           :style="store ? { background: store.primary_color + '20' } : { background: '#f1f5f9' }">
@@ -16,6 +17,7 @@
         class="p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors">
         <UIcon :name="sidebarOpen ? 'i-tabler-x' : 'i-tabler-menu-2'" class="w-5 h-5" />
       </button>
+      </div>
     </div>
 
     <!-- Mobile overlay -->
@@ -29,7 +31,8 @@
       class="fixed left-0 top-0 h-full w-64 bg-white border-r border-slate-100 flex flex-col z-50 shadow-sm
              transition-transform duration-200 ease-in-out
              -translate-x-full lg:translate-x-0"
-      :class="sidebarOpen ? '!translate-x-0' : ''">
+      :class="sidebarOpen ? '!translate-x-0' : ''"
+      :style="{ paddingTop: safeTop }">
 
       <!-- Store branding -->
       <NuxtLink to="/member/profile" @click="sidebarOpen = false"
@@ -121,13 +124,13 @@
     </aside>
 
     <!-- Main content -->
-    <main class="lg:ml-64 flex-1 min-w-0 min-h-screen pt-14 lg:pt-0 pb-28 lg:pb-0 overflow-x-clip">
+    <main class="mbr-main lg:ml-64 flex-1 min-w-0 min-h-screen lg:pt-0 pb-28 lg:pb-0 overflow-x-clip">
       <slot />
     </main>
 
     <!-- Bottom navigation (mobile only, floating pill — app-style) -->
     <div class="lg:hidden fixed inset-x-0 bottom-0 z-50 px-4 pointer-events-none"
-      :style="{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }">
+      :style="{ paddingBottom: 'calc(' + safeBottom + ' + 12px)' }">
       <nav class="pointer-events-auto mx-auto max-w-md bg-white/95 backdrop-blur border border-slate-100
                   rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-stretch justify-around">
         <NuxtLink v-for="item in bottomNav" :key="item.to" :to="item.to"
@@ -147,6 +150,10 @@ const route = useRoute()
 
 const store = computed(() => storeData.value)
 const sidebarOpen = ref(false)
+
+// Safe-area inset: baca env() (iOS/PWA) ATAU CSS var yg disuntik WebView (Android) — mana yg lebih besar.
+const safeTop    = 'max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px))'
+const safeBottom = 'max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px))'
 
 watch(() => route.path, () => { sidebarOpen.value = false })
 
@@ -191,5 +198,18 @@ async function doLogout() {
 .fade-overlay-enter-from,
 .fade-overlay-leave-to {
   opacity: 0;
+}
+
+/* Safe-area: top bar turun di bawah status bar, konten mulai di bawah top bar.
+   Baca env() (iOS) ATAU var(--safe-area-inset-top) (WebView Android). */
+.mbr-topbar {
+  padding-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+}
+.mbr-main {
+  padding-top: calc(3.5rem + max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px)));
+}
+@media (min-width: 1024px) {
+  /* Desktop: tidak ada top bar mobile → tanpa offset */
+  .mbr-main { padding-top: 0; }
 }
 </style>
