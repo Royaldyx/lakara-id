@@ -43,6 +43,16 @@ function sanitizeImage(raw: any, tier: string): string {
   return ''
 }
 
+/** ikon/logo custom per link — PREMIUM only (upload atau URL https) */
+function sanitizeIcon(raw: any, isPremium: boolean): string {
+  if (!isPremium) return ''
+  const v = (raw || '').toString().trim().slice(0, 500)
+  if (!v) return ''
+  if (v.startsWith('/api/file/')) return v
+  if (/^https:\/\//i.test(v)) return v
+  return ''
+}
+
 /** wallpaper image/video — premium only */
 function sanitizeBgMedia(raw: any, isPremium: boolean, kind: 'image' | 'video'): string {
   if (!isPremium) return ''
@@ -74,6 +84,7 @@ export default defineEventHandler(async (event) => {
     label:     (link.label || '').toString().trim().slice(0, 50),
     url:       (link.url   || '').toString().trim().slice(0, 500),
     image:     sanitizeImage(link.image, tier),
+    icon:      sanitizeIcon(link.icon, isPremium),
     enabled:   link.enabled !== false,
     featured:  isPro && link.featured === true,
   }))

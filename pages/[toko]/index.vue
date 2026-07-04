@@ -90,10 +90,13 @@
             <img v-if="featuredLink.image" :src="featuredLink.image" alt=""
               class="absolute inset-0 w-full h-full object-cover z-0" />
             <div v-if="featuredLink.image" class="absolute inset-0 bg-black/45 z-0" />
-            <span class="relative z-10 w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm"
-              :style="featuredLink.image ? { background: 'rgba(255,255,255,0.25)', color: '#fff' } : featuredIconStyle">
-              <UIcon v-if="getMeta(featuredLink.type).icon" :name="getMeta(featuredLink.type).icon!" class="w-4 h-4" />
-              <span v-else>{{ getMeta(featuredLink.type).emoji }}</span>
+            <span class="relative z-10 w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm overflow-hidden"
+              :style="featuredLink.icon ? {} : (featuredLink.image ? { background: 'rgba(255,255,255,0.25)', color: '#fff' } : featuredIconStyle)">
+              <img v-if="featuredLink.icon" :src="featuredLink.icon" alt="" loading="lazy" class="w-full h-full object-cover" />
+              <template v-else>
+                <UIcon v-if="getMeta(featuredLink.type).icon" :name="getMeta(featuredLink.type).icon!" class="w-4 h-4" />
+                <span v-else>{{ getMeta(featuredLink.type).emoji }}</span>
+              </template>
             </span>
             <span class="relative z-10 flex-1 text-center" :style="featuredLink.image ? { color: '#fff' } : {}">{{ featuredLink.label || featuredLink.type }}</span>
             <UIcon name="i-tabler-star-filled" class="relative z-10 w-4 h-4 opacity-70 ml-1" :style="featuredLink.image ? { color: '#fff' } : {}" />
@@ -109,10 +112,13 @@
               <img v-if="link.image" :src="link.image" alt="" loading="lazy"
                 class="absolute inset-0 w-full h-full object-cover z-0" />
               <div v-if="link.image" class="absolute inset-0 bg-black/45 z-0" />
-              <span class="relative z-10 w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm"
-                :style="link.image ? { background: 'rgba(255,255,255,0.25)', color: '#fff' } : iconStyle(link)">
-                <UIcon v-if="getMeta(link.type).icon" :name="getMeta(link.type).icon!" class="w-4 h-4" />
-                <span v-else>{{ getMeta(link.type).emoji }}</span>
+              <span class="relative z-10 w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm overflow-hidden"
+                :style="link.icon ? {} : (link.image ? { background: 'rgba(255,255,255,0.25)', color: '#fff' } : iconStyle(link))">
+                <img v-if="link.icon" :src="link.icon" alt="" loading="lazy" class="w-full h-full object-cover" />
+                <template v-else>
+                  <UIcon v-if="getMeta(link.type).icon" :name="getMeta(link.type).icon!" class="w-4 h-4" />
+                  <span v-else>{{ getMeta(link.type).emoji }}</span>
+                </template>
               </span>
               <span class="relative z-10 flex-1 text-center" :style="link.image ? { color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)' } : {}">{{ link.label || link.type }}</span>
             </a>
