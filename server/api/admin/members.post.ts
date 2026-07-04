@@ -29,6 +29,13 @@ export default defineEventHandler(async (event) => {
     return { ok: true }
   }
 
+  if (action === 'verify_email') {
+    // Verifikasi manual email (biar nggak perlu buka DB / kirim email verif)
+    const { verified } = await readBody(event)
+    await execute('UPDATE stores SET email_verified = ? WHERE id = ?', [verified === false ? 0 : 1, store_id])
+    return { ok: true }
+  }
+
   if (action === 'update_creds') {
     if (!email) throw createError({ statusCode: 400, statusMessage: 'Email wajib diisi.' })
     const dup = await queryOne('SELECT id FROM stores WHERE member_email = ? AND id != ?', [email.toLowerCase(), store_id])

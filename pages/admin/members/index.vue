@@ -72,6 +72,9 @@
                 <div class="text-xs mt-0.5" :class="m.has_password ? 'text-green-600' : 'text-orange-500'">
                   {{ m.has_password ? '✓ Password aktif' : '⚠ Belum ada password' }}
                 </div>
+                <div class="text-xs mt-0.5" :class="m.email_verified ? 'text-green-600' : 'text-amber-500'">
+                  {{ m.email_verified ? '✓ Email terverifikasi' : '⚠ Belum verifikasi' }}
+                </div>
               </td>
               <td class="px-5 py-3.5 text-center hidden lg:table-cell">
                 <span class="px-2 py-0.5 rounded-full text-xs font-bold uppercase" :class="tierBadgeClass(m.product_tier)">
@@ -91,6 +94,7 @@
               <td class="px-5 py-3.5">
                 <div class="flex items-center justify-end gap-3 flex-wrap">
                   <button @click="openEdit(m)" class="text-xs text-[#3358ff] hover:opacity-70 font-medium">Edit</button>
+                  <button v-if="!m.email_verified" @click="verifyMember(m)" class="text-xs text-emerald-600 hover:text-emerald-800 font-semibold">Verifikasi</button>
                   <button @click="openTier(m)" class="text-xs text-purple-600 hover:text-purple-800 font-medium">Tier</button>
                   <NuxtLink :to="`/admin/stores/edit?action=edit&id=${m.store_id}`"
                     class="text-xs text-slate-400 hover:text-slate-700 font-medium">Toko</NuxtLink>
@@ -409,6 +413,20 @@ async function toggleActive(m: any) {
     refreshMembers()
   } catch (e: any) {
     showToast(e?.data?.statusMessage || 'Gagal update.', 'error')
+  }
+}
+
+// ── Verifikasi email manual (tanpa buka DB) ──────────────
+async function verifyMember(m: any) {
+  try {
+    await $fetch('/api/admin/members', {
+      method: 'POST', headers: authHeaders.value,
+      body: { store_id: m.store_id, action: 'verify_email', verified: true },
+    })
+    showToast(`Email ${m.member_email} diverifikasi.`)
+    refreshMembers()
+  } catch (e: any) {
+    showToast(e?.data?.statusMessage || 'Gagal verifikasi.', 'error')
   }
 }
 
