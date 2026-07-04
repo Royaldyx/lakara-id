@@ -164,7 +164,7 @@
 
         <!-- Footer branding -->
         <div v-if="!bio.hide_branding" class="mt-14 text-center">
-          <a href="https://lakara.id/member" target="_blank"
+          <a :href="`https://lakara.id/member/register?ref=${$route.params.toko}`" target="_blank"
             class="inline-flex items-center gap-1.5 opacity-40 hover:opacity-70 transition-opacity"
             :style="{ color: bio.bio_color || bio.text_color }">
             <svg viewBox="115 87 145 120" fill="currentColor" width="13" height="13" xmlns="http://www.w3.org/2000/svg">

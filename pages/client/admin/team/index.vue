@@ -66,7 +66,7 @@
               </UFormGroup>
               <UFormGroup label="Nama *"><UInput v-model="form.name" /></UFormGroup>
               <UFormGroup label="Email *"><UInput v-model="form.email" type="email" /></UFormGroup>
-              <UFormGroup label="Password *"><UInput v-model="form.password" type="password" placeholder="Min. 6 karakter" /></UFormGroup>
+              <UFormGroup label="Password *"><PasswordInput v-model="form.password" placeholder="Min. 6 karakter" /></UFormGroup>
               <UFormGroup label="No. WhatsApp"><UInput v-model="form.phone" placeholder="628…" /></UFormGroup>
             </div>
             <div class="border-t border-slate-100 px-5 py-4 flex gap-3">

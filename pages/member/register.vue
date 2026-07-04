@@ -70,10 +70,10 @@
 
           <div class="grid md:grid-cols-2 gap-4">
             <UFormGroup label="Password *">
-              <UInput v-model="form.password" type="password" placeholder="Min. 6 karakter" required />
+              <PasswordInput v-model="form.password" placeholder="Min. 6 karakter" required />
             </UFormGroup>
             <UFormGroup label="Konfirmasi Password *">
-              <UInput v-model="form.confirm" type="password" placeholder="Ulangi password" required />
+              <PasswordInput v-model="form.confirm" placeholder="Ulangi password" required />
             </UFormGroup>
           </div>
 

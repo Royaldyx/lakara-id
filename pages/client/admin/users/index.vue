@@ -59,7 +59,7 @@
               <div v-if="formError" class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">{{ formError }}</div>
               <UFormGroup label="Nama *"><UInput v-model="form.name" /></UFormGroup>
               <UFormGroup label="Email *"><UInput v-model="form.email" type="email" /></UFormGroup>
-              <UFormGroup label="Password *"><UInput v-model="form.password" type="password" placeholder="Min. 6 karakter" /></UFormGroup>
+              <UFormGroup label="Password *"><PasswordInput v-model="form.password" placeholder="Min. 6 karakter" /></UFormGroup>
               <UFormGroup label="Role">
                 <select v-model="form.role" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3358ff]/30">
                   <option value="admin">Admin</option>

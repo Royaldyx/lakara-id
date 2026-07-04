@@ -19,7 +19,7 @@
             <UInput v-model="email" type="email" placeholder="email@perusahaan.com" size="lg" autocomplete="email" required autofocus />
           </UFormGroup>
           <UFormGroup label="Password">
-            <UInput v-model="password" type="password" placeholder="••••••••" size="lg" autocomplete="current-password" required />
+            <PasswordInput v-model="password" placeholder="••••••••" size="lg" autocomplete="current-password" required />
           </UFormGroup>
           <UButton type="submit" block size="lg" style="background-color: #3358ff;" class="font-bold" :loading="portal.isLoading.value">
             Masuk

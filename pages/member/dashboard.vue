@@ -127,6 +127,25 @@
       </div>
     </div>
 
+    <!-- QR Code Link Bio -->
+    <div v-if="store?.slug" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-8 flex flex-col sm:flex-row items-center gap-5">
+      <div class="w-36 h-36 rounded-xl border border-slate-100 p-2 flex-shrink-0 bg-white">
+        <img :src="qrUrl" alt="QR Code Link Bio" class="w-full h-full object-contain" loading="lazy" />
+      </div>
+      <div class="flex-1 min-w-0 text-center sm:text-left">
+        <h2 class="font-bold text-slate-900 flex items-center gap-2 justify-center sm:justify-start">
+          <UIcon name="i-tabler-qrcode" class="w-5 h-5" :style="{ color: store.primary_color }" /> QR Code Link Bio
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">Cetak di banner, kemasan, kartu nama, atau booth. Orang tinggal scan → langsung ke link bio kamu.</p>
+        <div class="flex gap-2 mt-3 justify-center sm:justify-start">
+          <button @click="downloadQr" class="inline-flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-xl text-white hover:opacity-90 transition"
+            :style="{ background: store.primary_color }">
+            <UIcon name="i-tabler-download" class="w-4 h-4" /> Download QR
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Quick actions -->
     <div class="grid md:grid-cols-3 gap-5">
       <NuxtLink to="/member/products/edit?action=add"
@@ -202,6 +221,23 @@ const isFree = computed(() => {
   return false
 })
 const lockedPerks = ['Link tanpa batas', 'Font kustom', 'Analitik klik', 'Upload gambar & GIF', 'Animasi tombol', 'Verified badge', 'Hapus branding Lakara']
+
+// QR Code link bio (via api.qrserver.com — zero dependency)
+const bioUrl = computed(() => `https://lakara.id/${store.value?.slug || ''}`)
+const qrUrl  = computed(() => `https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=12&data=${encodeURIComponent(bioUrl.value)}`)
+async function downloadQr() {
+  try {
+    const res  = await fetch(qrUrl.value)
+    const blob = await res.blob()
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `qr-lakara-${store.value?.slug || 'linkbio'}.png`
+    document.body.appendChild(a); a.click(); a.remove()
+    URL.revokeObjectURL(a.href)
+  } catch {
+    window.open(qrUrl.value, '_blank')
+  }
+}
 
 const onboarding = computed(() => {
   const s = store.value || {}

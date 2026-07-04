@@ -22,7 +22,7 @@
 
         <form @submit.prevent="doLogin" class="space-y-4">
           <UFormGroup label="Password">
-            <UInput v-model="password" type="password" placeholder="••••••••" size="lg"
+            <PasswordInput v-model="password" placeholder="••••••••" size="lg"
               autocomplete="current-password" required autofocus />
           </UFormGroup>
           <UButton type="submit" block size="lg" style="background-color: #3358ff;"

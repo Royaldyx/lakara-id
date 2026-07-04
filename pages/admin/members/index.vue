@@ -200,7 +200,7 @@
         </UFormGroup>
 
         <UFormGroup label="Password *">
-          <UInput v-model="createForm.password" type="password" placeholder="Min. 6 karakter" />
+          <PasswordInput v-model="createForm.password" placeholder="Min. 6 karakter" />
         </UFormGroup>
 
         <div v-if="createError" class="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">{{ createError }}</div>
@@ -226,7 +226,7 @@
           <UInput v-model="editForm.email" type="email" />
         </UFormGroup>
         <UFormGroup label="Password Baru">
-          <UInput v-model="editForm.password" type="password" placeholder="Kosongkan = tidak diubah" />
+          <PasswordInput v-model="editForm.password" placeholder="Kosongkan = tidak diubah" />
         </UFormGroup>
         <div v-if="editError" class="text-xs text-red-500">{{ editError }}</div>
         <div class="flex gap-2 pt-2">

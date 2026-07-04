@@ -35,13 +35,13 @@
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4 mt-5">
       <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ganti Password</p>
       <UFormGroup label="Password Saat Ini">
-        <UInput v-model="form.current" type="password" placeholder="••••••••" autocomplete="current-password" />
+        <PasswordInput v-model="form.current" placeholder="••••••••" autocomplete="current-password" />
       </UFormGroup>
       <UFormGroup label="Password Baru">
-        <UInput v-model="form.newPass" type="password" placeholder="Min. 6 karakter" autocomplete="new-password" />
+        <PasswordInput v-model="form.newPass" placeholder="Min. 6 karakter" autocomplete="new-password" />
       </UFormGroup>
       <UFormGroup label="Konfirmasi Password Baru">
-        <UInput v-model="form.confirm" type="password" placeholder="Ulangi password baru" autocomplete="new-password" />
+        <PasswordInput v-model="form.confirm" placeholder="Ulangi password baru" autocomplete="new-password" />
       </UFormGroup>
       <UButton @click="changePassword" style="background-color: #3358ff;" class="font-bold" :loading="saving">
         🔒 Ganti Password

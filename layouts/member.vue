@@ -1,6 +1,9 @@
 <template>
   <div class="flex min-h-screen bg-slate-50">
 
+    <!-- Gate versi minimum aplikasi mobile -->
+    <AppUpdateGate />
+
     <!-- Mobile top bar -->
     <div class="mbr-topbar lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-100 shadow-sm">
       <div class="px-4 h-14 flex items-center justify-between">
@@ -32,7 +35,7 @@
              transition-transform duration-200 ease-in-out
              -translate-x-full lg:translate-x-0"
       :class="sidebarOpen ? '!translate-x-0' : ''"
-      :style="{ paddingTop: safeTop }">
+      :style="{ paddingTop: safeTop, paddingBottom: safeBottom }">
 
       <!-- Store branding -->
       <NuxtLink to="/member/profile" @click="sidebarOpen = false"

@@ -145,6 +145,28 @@
         </div>
       </div>
 
+      <!-- Aplikasi Mobile (WebView) -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+          <UIcon name="i-tabler-device-mobile" class="w-4 h-4 text-[#3358ff]" /> Aplikasi Mobile
+        </p>
+        <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs text-blue-700 flex items-start gap-2">
+          <UIcon name="i-tabler-info-circle" class="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <span>App buka <code>lakara.id/member?appVersion=x.y.z+build</code>. Kalau versi app di bawah "Versi Minimal", user dipaksa update. Format semver+build (mis. <code>1.2.0+15</code>). Kosong = izinkan semua.</span>
+        </div>
+        <div class="grid md:grid-cols-2 gap-4">
+          <UFormGroup label="Versi Minimal Wajib">
+            <UInput v-model="form.app_min_version" placeholder="1.0.0+1" />
+          </UFormGroup>
+          <UFormGroup label="Versi Terbaru (opsional)">
+            <UInput v-model="form.app_latest_version" placeholder="1.3.0+20" />
+          </UFormGroup>
+        </div>
+        <UFormGroup label="Link Update (Play Store / APK)">
+          <UInput v-model="form.app_update_url" placeholder="https://play.google.com/store/apps/details?id=..." />
+        </UFormGroup>
+      </div>
+
     </div>
 
     <!-- Save -->
@@ -184,6 +206,9 @@ const form = reactive({
   bank_holder:    '',
   upgrade_price:  20000,
   upgrade_promo:  null as number | null,
+  app_min_version:    '',
+  app_latest_version: '',
+  app_update_url:     '',
   ...raw.value,
 })
 

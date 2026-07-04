@@ -156,7 +156,7 @@
             <UInput v-model="creds.email" type="email" placeholder="owner@toko.com" />
           </UFormGroup>
           <UFormGroup label="Password">
-            <UInput v-model="creds.password" type="password" placeholder="Kosongkan jika tidak ingin ubah" />
+            <PasswordInput v-model="creds.password" placeholder="Kosongkan jika tidak ingin ubah" />
             <template #hint>
               <span class="text-xs text-slate-400">{{ creds.hasPassword ? 'Kosongkan = password lama tetap' : 'Wajib diisi untuk pertama kali' }}</span>
             </template>

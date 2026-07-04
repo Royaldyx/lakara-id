@@ -83,7 +83,7 @@
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Akun Login Klien (opsional)</p>
                 <div class="grid grid-cols-2 gap-3">
                   <UFormGroup label="Email Login"><UInput v-model="form.login_email" type="email" /></UFormGroup>
-                  <UFormGroup label="Password"><UInput v-model="form.login_password" type="password" placeholder="Min. 6 karakter" /></UFormGroup>
+                  <UFormGroup label="Password"><PasswordInput v-model="form.login_password" placeholder="Min. 6 karakter" /></UFormGroup>
                 </div>
               </div>
             </div>
