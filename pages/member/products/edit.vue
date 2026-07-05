@@ -13,6 +13,10 @@
       </div>
     </div>
 
+    <div v-if="importOk && importMsg" class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3 mb-6 flex items-center gap-2">
+      <UIcon name="i-tabler-circle-check" class="w-4 h-4 flex-shrink-0" /> {{ importMsg }}
+    </div>
+
     <div class="grid lg:grid-cols-3 gap-6">
       <!-- Main -->
       <div class="lg:col-span-2 space-y-5">
@@ -406,13 +410,20 @@ watchEffect(() => {
 
 onMounted(async () => {
   if (!store.value) await fetchStore()
-  // Import via bookmarklet: ?shopee_import=<json>
-  if (!isEdit.value && route.query.shopee_import) {
-    try {
-      applyImport(JSON.parse(decodeURIComponent(route.query.shopee_import as string)))
-      importOk.value = true
-      importMsg.value = '✓ Data dari Shopee ke-import (via bookmarklet)! Cek & rapikan, lalu Simpan.'
-    } catch { /* ignore */ }
+  // Import via bookmarklet: dari query ?shopee_import ATAU sessionStorage (kalau sempat bounce)
+  if (!isEdit.value) {
+    let raw = (route.query.shopee_import as string) || ''
+    if (!raw) { try { raw = sessionStorage.getItem('shopee_import') || '' } catch { /* ignore */ } }
+    if (raw) {
+      let obj: any = null
+      try { obj = JSON.parse(raw) } catch { try { obj = JSON.parse(decodeURIComponent(raw)) } catch { /* ignore */ } }
+      if (obj) {
+        applyImport(obj)
+        importOk.value = true
+        importMsg.value = '✓ Data dari Shopee ke-import! Cek & rapikan datanya, lalu Simpan.'
+      }
+      try { sessionStorage.removeItem('shopee_import') } catch { /* ignore */ }
+    }
   }
 })
 

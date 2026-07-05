@@ -185,7 +185,13 @@ const isActive = (to: string) => route.path.startsWith(to) || route.path === to
 
 onMounted(async () => {
   if (!storeData.value) await fetchStore()
-  if (!storeData.value) navigateTo('/member')
+  if (!storeData.value) { navigateTo('/member'); return }
+  // Import Shopee dari bookmarklet: kalau ada data pending & belum di editor, buka editor
+  try {
+    if (sessionStorage.getItem('shopee_import') && route.path !== '/member/products/edit') {
+      navigateTo('/member/products/edit')
+    }
+  } catch { /* ignore */ }
 })
 
 async function doLogout() {
