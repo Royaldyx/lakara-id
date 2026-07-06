@@ -13,29 +13,25 @@
       </div>
     </div>
 
-    <div v-if="importOk && importMsg" class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3 mb-6 flex items-center gap-2">
-      <UIcon name="i-tabler-circle-check" class="w-4 h-4 flex-shrink-0" /> {{ importMsg }}
+    <div v-if="importMsg" class="text-sm rounded-xl px-4 py-3 mb-6 flex items-center gap-2 border"
+      :class="importOk ? 'bg-green-50 border-green-200 text-green-700' : 'bg-amber-50 border-amber-200 text-amber-700'">
+      <UIcon :name="importOk ? 'i-tabler-circle-check' : 'i-tabler-alert-circle'" class="w-4 h-4 flex-shrink-0" /> {{ importMsg }}
     </div>
 
     <div class="grid lg:grid-cols-3 gap-6">
       <!-- Main -->
       <div class="lg:col-span-2 space-y-5">
-        <!-- Import cepat dari Shopee — DISEMBUNYIKAN dari member (dipakai admin via bookmarklet).
-             Set kondisi ke true kalau mau tampilkan lagi ke member. -->
-        <div v-if="false" class="bg-gradient-to-br from-orange-50 to-white rounded-2xl border border-orange-100 p-5 space-y-3">
-          <div class="flex items-center gap-2">
-            <UIcon name="i-tabler-shopping-bag" class="w-5 h-5 text-orange-500" />
-            <p class="text-sm font-bold text-slate-900">Import cepat dari Shopee</p>
+        <!-- Import dari Shopee via clipboard (andal, nggak kena masalah SPA deep-link) -->
+        <div v-if="!isEdit" class="bg-gradient-to-br from-orange-50 to-white rounded-2xl border border-orange-100 p-4 flex items-center gap-3 flex-wrap">
+          <UIcon name="i-tabler-shopping-bag" class="w-5 h-5 text-orange-500 flex-shrink-0" />
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold text-slate-900">Import dari Shopee</p>
+            <p class="text-xs text-slate-400">Di halaman produk Shopee klik bookmarklet → data kesalin → balik ke sini → klik <strong>Tempel Data</strong>.</p>
           </div>
-          <p class="text-xs text-slate-400">Tempel link <strong>1 produk</strong> Shopee → dibantu isi otomatis. Kadang gagal (Shopee anti-bot), tinggal lengkapi manual.</p>
-          <div class="flex gap-2">
-            <UInput v-model="importUrl" placeholder="https://shopee.co.id/...-i.xxx.yyy" class="flex-1" @keyup.enter="importFromShopee" />
-            <button @click="importFromShopee" :disabled="importing || !importUrl" type="button"
-              class="px-4 py-2 bg-orange-500 text-white text-sm font-bold rounded-xl hover:bg-orange-600 disabled:opacity-50 flex items-center gap-1.5 whitespace-nowrap">
-              <UIcon :name="importing ? 'i-tabler-loader-2' : 'i-tabler-download'" class="w-4 h-4" :class="importing ? 'animate-spin' : ''" /> Import
-            </button>
-          </div>
-          <p v-if="importMsg" class="text-xs font-medium" :class="importOk ? 'text-green-600' : 'text-amber-600'">{{ importMsg }}</p>
+          <button @click="pasteShopee" type="button"
+            class="px-4 py-2 bg-orange-500 text-white text-sm font-bold rounded-xl hover:bg-orange-600 flex items-center gap-1.5 whitespace-nowrap flex-shrink-0">
+            <UIcon name="i-tabler-clipboard-check" class="w-4 h-4" /> Tempel Data
+          </button>
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-100 p-6 space-y-5">
@@ -337,11 +333,31 @@ function toggleFeatured(key: string) {
   form.marketplace_featured.push(key)
 }
 
-// Import cepat dari Shopee (best-effort)
-const importUrl = ref('')
-const importing  = ref(false)
+// Import dari Shopee via clipboard/bookmarklet
 const importMsg  = ref('')
 const importOk   = ref(false)
+
+// Tempel data Shopee dari clipboard (bookmarklet nyalin JSON ke clipboard)
+async function pasteShopee() {
+  importMsg.value = ''
+  try {
+    const text = await navigator.clipboard.readText()
+    if (!text) { importOk.value = false; importMsg.value = 'Clipboard kosong. Klik bookmarklet di halaman produk Shopee dulu.'; return }
+    let obj: any = null
+    try { obj = JSON.parse(text) } catch { /* not json */ }
+    if (obj && obj.name) {
+      applyImport(obj)
+      importOk.value = true
+      importMsg.value = '✓ Data Shopee ditempel! Cek & rapikan, lalu Simpan.'
+    } else {
+      importOk.value = false
+      importMsg.value = 'Data di clipboard bukan dari bookmarklet Shopee. Klik bookmarklet-nya lagi.'
+    }
+  } catch {
+    importOk.value = false
+    importMsg.value = 'Browser nggak kasih akses clipboard. Izinkan, atau salin data manual.'
+  }
+}
 
 // Isi form dari data import (dipakai server-import & bookmarklet)
 function applyImport(d: any) {
@@ -353,28 +369,6 @@ function applyImport(d: any) {
   if (Array.isArray(d.images)) for (const u of d.images) if (u && !form.images.includes(u)) form.images.push(u)
   if (d.shopee_url) form.marketplace.shopee = String(d.shopee_url)
   if (d.rating && !form.reviews.rating) form.reviews.rating = Number(d.rating) || 0
-}
-
-async function importFromShopee() {
-  if (!importUrl.value.trim()) return
-  importing.value = true; importMsg.value = ''
-  try {
-    const res = await $fetch<any>('/api/member/import-product', { method: 'POST', body: { url: importUrl.value.trim() } })
-    if (res.ok && res.data) {
-      applyImport(res.data)
-      importOk.value = true
-      importMsg.value = '✓ Berhasil di-import! Cek & rapikan datanya, lalu Simpan.'
-      importUrl.value = ''
-    } else {
-      importOk.value = false
-      importMsg.value = res.message || 'Gagal import — pakai cara Bookmarklet (lebih ampuh) atau isi manual.'
-    }
-  } catch (e: any) {
-    importOk.value = false
-    importMsg.value = e?.data?.statusMessage || 'Gagal import — pakai cara Bookmarklet atau isi manual.'
-  } finally {
-    importing.value = false
-  }
 }
 
 const slugManual  = ref(false)
