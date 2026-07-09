@@ -91,8 +91,11 @@
               class="absolute inset-0 w-full h-full object-cover z-0" />
             <div v-if="featuredLink.image" class="absolute inset-0 bg-black/45 z-0" />
             <span class="relative z-10 w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm overflow-hidden"
-              :style="featuredLink.icon ? {} : (featuredLink.image ? { background: 'rgba(255,255,255,0.25)', color: '#fff' } : featuredIconStyle)">
-              <img v-if="featuredLink.icon" :src="featuredLink.icon" alt="" loading="lazy" class="w-full h-full object-cover" />
+              :style="isIconName(featuredLink.icon)
+                ? { color: featuredLink.icon_color || (featuredLink.image ? '#fff' : undefined) }
+                : (featuredLink.icon ? {} : (featuredLink.image ? { background: 'rgba(255,255,255,0.25)', color: '#fff' } : featuredIconStyle))">
+              <UIcon v-if="isIconName(featuredLink.icon)" :name="featuredLink.icon" class="w-4 h-4" />
+              <img v-else-if="featuredLink.icon" :src="featuredLink.icon" alt="" loading="lazy" class="w-full h-full object-cover" />
               <template v-else>
                 <UIcon v-if="getMeta(featuredLink.type).icon" :name="getMeta(featuredLink.type).icon!" class="w-4 h-4" />
                 <span v-else>{{ getMeta(featuredLink.type).emoji }}</span>
@@ -113,8 +116,11 @@
                 class="absolute inset-0 w-full h-full object-cover z-0" />
               <div v-if="link.image" class="absolute inset-0 bg-black/45 z-0" />
               <span class="relative z-10 w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm overflow-hidden"
-                :style="link.icon ? {} : (link.image ? { background: 'rgba(255,255,255,0.25)', color: '#fff' } : iconStyle(link))">
-                <img v-if="link.icon" :src="link.icon" alt="" loading="lazy" class="w-full h-full object-cover" />
+                :style="isIconName(link.icon)
+                  ? { color: link.icon_color || (link.image ? '#fff' : undefined) }
+                  : (link.icon ? {} : (link.image ? { background: 'rgba(255,255,255,0.25)', color: '#fff' } : iconStyle(link)))">
+                <UIcon v-if="isIconName(link.icon)" :name="link.icon" class="w-4 h-4" />
+                <img v-else-if="link.icon" :src="link.icon" alt="" loading="lazy" class="w-full h-full object-cover" />
                 <template v-else>
                   <UIcon v-if="getMeta(link.type).icon" :name="getMeta(link.type).icon!" class="w-4 h-4" />
                   <span v-else>{{ getMeta(link.type).emoji }}</span>
@@ -315,6 +321,11 @@ const contentFontStyle = computed(() => {
 // Social icon row
 const socialList = computed(() => ((bio.value.socials as any[]) || []).filter((s: any) => s && s.type && s.url))
 function socialIcon(type: string) { return SOCIAL_META[type]?.icon || 'i-tabler-link' }
+// True kalau icon = nama icon Tabler (bisa diwarnai), bukan URL gambar upload
+function isIconName(v: any): boolean {
+  const s = (v || '').toString()
+  return s.startsWith('i-') && !s.startsWith('/api/file/') && !/^https?:/.test(s)
+}
 function socialHref(s: any) {
   const url = (s.url || '').toString().trim()
   if (s.type === 'email') return url.startsWith('mailto:') ? url : 'mailto:' + url

@@ -8,10 +8,29 @@ export default defineNuxtConfig({
     icons: ['tabler'],
   },
 
-  // WAJIB produksi: bundle icon lokal supaya tidak fetch CDN saat runtime SSR
+  // WAJIB produksi: bundle icon lokal supaya tidak fetch CDN saat runtime SSR.
+  // `icons` = daftar icon picker link bio (dipilih dinamis → wajib di-bundle eksplisit
+  // biar tidak fetch runtime & tetap muncul offline).
   icon: {
     serverBundle: 'local',
-    clientBundle: { scan: true },
+    clientBundle: {
+      scan: true,
+      icons: [
+        'tabler:brand-instagram', 'tabler:brand-tiktok', 'tabler:brand-youtube',
+        'tabler:brand-facebook', 'tabler:brand-x', 'tabler:brand-whatsapp',
+        'tabler:brand-telegram', 'tabler:brand-threads', 'tabler:brand-discord',
+        'tabler:brand-twitch', 'tabler:brand-spotify', 'tabler:brand-github',
+        'tabler:brand-linkedin', 'tabler:brand-pinterest', 'tabler:brand-snapchat',
+        'tabler:brand-line', 'tabler:brand-google', 'tabler:brand-apple',
+        'tabler:brand-shopee', 'tabler:brand-tidal', 'tabler:brand-soundcloud',
+        'tabler:link', 'tabler:world', 'tabler:mail', 'tabler:phone',
+        'tabler:map-pin', 'tabler:shopping-cart', 'tabler:shopping-bag',
+        'tabler:star', 'tabler:heart', 'tabler:gift', 'tabler:coffee',
+        'tabler:music', 'tabler:video', 'tabler:camera', 'tabler:wallet',
+        'tabler:calendar', 'tabler:download', 'tabler:book', 'tabler:ticket',
+        'tabler:bolt', 'tabler:flame', 'tabler:crown', 'tabler:rocket',
+      ],
+    },
   },
 
   colorMode: {

@@ -43,11 +43,29 @@ function sanitizeImage(raw: any, tier: string): string {
   return ''
 }
 
-/** ikon/logo custom per link — PREMIUM only (upload atau URL https) */
+// Whitelist icon name yang di-bundle (nuxt.config icon.clientBundle.icons) — semua tier
+const ALLOWED_ICONS = new Set([
+  'i-tabler-brand-instagram', 'i-tabler-brand-tiktok', 'i-tabler-brand-youtube',
+  'i-tabler-brand-facebook', 'i-tabler-brand-x', 'i-tabler-brand-whatsapp',
+  'i-tabler-brand-telegram', 'i-tabler-brand-threads', 'i-tabler-brand-discord',
+  'i-tabler-brand-twitch', 'i-tabler-brand-spotify', 'i-tabler-brand-github',
+  'i-tabler-brand-linkedin', 'i-tabler-brand-pinterest', 'i-tabler-brand-snapchat',
+  'i-tabler-brand-line', 'i-tabler-brand-google', 'i-tabler-brand-apple',
+  'i-tabler-brand-shopee', 'i-tabler-brand-tidal', 'i-tabler-brand-soundcloud',
+  'i-tabler-link', 'i-tabler-world', 'i-tabler-mail', 'i-tabler-phone',
+  'i-tabler-map-pin', 'i-tabler-shopping-cart', 'i-tabler-shopping-bag',
+  'i-tabler-star', 'i-tabler-heart', 'i-tabler-gift', 'i-tabler-coffee',
+  'i-tabler-music', 'i-tabler-video', 'i-tabler-camera', 'i-tabler-wallet',
+  'i-tabler-calendar', 'i-tabler-download', 'i-tabler-book', 'i-tabler-ticket',
+  'i-tabler-bolt', 'i-tabler-flame', 'i-tabler-crown', 'i-tabler-rocket',
+])
+
+/** ikon/logo per link — icon name (semua tier) atau upload/URL https (Premium) */
 function sanitizeIcon(raw: any, isPremium: boolean): string {
-  if (!isPremium) return ''
   const v = (raw || '').toString().trim().slice(0, 500)
   if (!v) return ''
+  if (ALLOWED_ICONS.has(v)) return v            // icon picker — semua tier
+  if (!isPremium) return ''                     // upload/URL hanya Premium
   if (v.startsWith('/api/file/')) return v
   if (/^https:\/\//i.test(v)) return v
   return ''
@@ -85,6 +103,7 @@ export default defineEventHandler(async (event) => {
     url:       (link.url   || '').toString().trim().slice(0, 500),
     image:     sanitizeImage(link.image, tier),
     icon:      sanitizeIcon(link.icon, isPremium),
+    icon_color: isHex(link.icon_color) ? link.icon_color : '',
     enabled:   link.enabled !== false,
     featured:  isPro && link.featured === true,
   }))

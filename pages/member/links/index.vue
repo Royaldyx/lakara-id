@@ -191,7 +191,11 @@
           class="relative flex items-center gap-3 p-3 border rounded-xl transition-colors min-w-0 overflow-hidden"
           :class="link.enabled ? 'border-slate-200 bg-white' : 'border-slate-100 bg-slate-50/60'">
           <div v-if="link.featured && tier !== 'free'" class="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full" />
-          <img v-if="link.icon || link.image" :src="link.icon || link.image" alt="" class="w-9 h-9 rounded-lg object-cover flex-shrink-0 border border-slate-100" />
+          <div v-if="isIconName(link.icon)" class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 border border-slate-100 bg-slate-50"
+            :style="{ color: link.icon_color || getLinkMeta(link.type).color }">
+            <UIcon :name="link.icon" class="w-5 h-5" />
+          </div>
+          <img v-else-if="link.icon || link.image" :src="link.icon || link.image" alt="" class="w-9 h-9 rounded-lg object-cover flex-shrink-0 border border-slate-100" />
           <div v-else class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-sm font-black"
             :style="{ background: getLinkMeta(link.type).color + '20', color: getLinkMeta(link.type).color }">
             <UIcon v-if="getLinkMeta(link.type).icon" :name="getLinkMeta(link.type).icon || ''" class="w-5 h-5" />
@@ -516,31 +520,57 @@
                 <p v-else-if="editingLink.type === 'gif'" class="text-xs text-slate-400 mt-1.5">Paste URL dari Giphy/Tenor. GIF tampil sebagai banner atas halaman.</p>
               </div>
 
-              <!-- Ikon / Logo Link (custom, Premium) -->
+              <!-- Ikon / Logo Link — pilih icon + warna (semua tier), upload gambar (Premium) -->
               <div v-if="editingLink.type !== 'gif' && editingLink.type !== 'youtube_video'" class="border-t border-slate-100 pt-4 space-y-3">
-                <div class="flex items-center justify-between">
-                  <label class="text-sm font-medium text-slate-700">Ikon / Logo Link</label>
-                  <span v-if="tier !== 'premium'" class="flex items-center gap-1 text-xs text-purple-600 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-lg font-medium"><UIcon name="i-tabler-crown" class="w-3 h-3" /> Premium</span>
-                </div>
+                <label class="text-sm font-medium text-slate-700 block">Ikon Link</label>
+
+                <!-- Preview + reset -->
                 <div class="flex items-center gap-3">
                   <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border border-slate-200 overflow-hidden bg-slate-50"
-                    :style="!editingLink.icon ? { background: getLinkMeta(editingLink.type).color + '20', color: getLinkMeta(editingLink.type).color } : {}">
-                    <img v-if="editingLink.icon" :src="editingLink.icon" alt="" class="w-full h-full object-cover" />
+                    :style="isIconName(editingLink.icon)
+                      ? { color: editingLink.icon_color || getLinkMeta(editingLink.type).color }
+                      : (!editingLink.icon ? { background: getLinkMeta(editingLink.type).color + '20', color: getLinkMeta(editingLink.type).color } : {})">
+                    <UIcon v-if="isIconName(editingLink.icon)" :name="editingLink.icon" class="w-6 h-6" />
+                    <img v-else-if="editingLink.icon" :src="editingLink.icon" alt="" class="w-full h-full object-cover" />
                     <UIcon v-else-if="getLinkMeta(editingLink.type).icon" :name="getLinkMeta(editingLink.type).icon || ''" class="w-6 h-6" />
                     <span v-else class="font-black">{{ getLinkMeta(editingLink.type).emoji }}</span>
                   </div>
-                  <div v-if="tier === 'premium'" class="flex flex-wrap gap-2 items-center">
+                  <button v-if="editingLink.icon" type="button" @click="resetLinkIcon" class="text-xs font-semibold text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition">Reset default</button>
+                  <span v-else class="text-xs text-slate-400">Pakai ikon default brand, atau pilih di bawah.</span>
+                </div>
+
+                <!-- Icon picker grid -->
+                <div class="grid grid-cols-8 sm:grid-cols-10 gap-1.5">
+                  <button v-for="ic in iconLibrary" :key="ic" type="button" @click="pickLinkIcon(ic)"
+                    class="aspect-square rounded-lg flex items-center justify-center border transition"
+                    :class="editingLink.icon === ic ? 'border-[#3358ff] bg-[#3358ff]/10 ring-2 ring-[#3358ff]/20' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
+                    :style="editingLink.icon === ic ? { color: editingLink.icon_color || '#3358ff' } : {}">
+                    <UIcon :name="ic" class="w-4 h-4" />
+                  </button>
+                </div>
+
+                <!-- Warna icon (aktif hanya kalau pilih icon) -->
+                <div v-if="isIconName(editingLink.icon)" class="flex items-center gap-2 flex-wrap">
+                  <label class="text-xs font-medium text-slate-600">Warna ikon:</label>
+                  <input type="color" :value="editingLink.icon_color || '#3358ff'" @input="setIconColor(($event.target as HTMLInputElement).value)"
+                    class="w-9 h-9 rounded-lg border border-slate-200 cursor-pointer p-0.5" />
+                  <button v-for="c in iconColorPresets" :key="c" type="button" @click="setIconColor(c)"
+                    class="w-7 h-7 rounded-full border-2 transition" :class="editingLink.icon_color === c ? 'border-slate-800 scale-110' : 'border-white shadow'"
+                    :style="{ background: c }" />
+                </div>
+
+                <!-- Upload gambar sendiri (Premium) -->
+                <div class="flex items-center gap-2 flex-wrap pt-1">
+                  <template v-if="tier === 'premium'">
                     <label class="cursor-pointer">
-                      <span class="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 text-white hover:opacity-90 transition" :class="iconUploading ? 'opacity-60 cursor-wait' : ''"><UIcon name="i-tabler-upload" class="w-3.5 h-3.5" /> Upload logo</span>
+                      <span class="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 text-white hover:opacity-90 transition" :class="iconUploading ? 'opacity-60 cursor-wait' : ''"><UIcon name="i-tabler-upload" class="w-3.5 h-3.5" /> Upload logo sendiri</span>
                       <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" :disabled="iconUploading" @change="uploadLinkIcon" />
                     </label>
-                    <button v-if="editingLink.icon" type="button" @click="removeLinkIcon" class="text-xs font-semibold text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition">Reset default</button>
                     <span v-if="iconUploading" class="text-xs text-slate-400 flex items-center gap-1"><UIcon name="i-tabler-loader-2" class="w-3.5 h-3.5 animate-spin" /> Mengunggah...</span>
-                  </div>
-                  <p v-else class="text-xs text-slate-400 flex-1">Ganti logo link pakai gambar sendiri — khusus <NuxtLink to="/member/upgrade" class="font-bold text-purple-600 underline">Premium</NuxtLink>.</p>
+                  </template>
+                  <p v-else class="text-xs text-slate-400 flex items-center gap-1"><UIcon name="i-tabler-crown" class="w-3 h-3 text-purple-500" /> Upload logo gambar sendiri khusus <NuxtLink to="/member/upgrade" class="font-bold text-purple-600 underline">Premium</NuxtLink>.</p>
                 </div>
                 <p v-if="iconError" class="text-xs text-red-500">{{ iconError }}</p>
-                <p v-else-if="tier === 'premium'" class="text-xs text-slate-400">Idealnya gambar persegi (1:1). Maks 2 MB.</p>
               </div>
 
               <!-- Card Image -->
@@ -995,7 +1025,37 @@ function removeCardImage() { if (editingLink.value) editingLink.value.image = ''
 // Ikon/logo custom per link (Premium)
 const iconUploading = ref(false)
 const iconError     = ref('')
-function removeLinkIcon() { if (editingLink.value) editingLink.value.icon = '' }
+
+// Icon picker (semua tier) — Tabler icons, monokrom → bisa diwarnai
+const iconLibrary = [
+  'i-tabler-brand-instagram', 'i-tabler-brand-tiktok', 'i-tabler-brand-youtube',
+  'i-tabler-brand-facebook', 'i-tabler-brand-x', 'i-tabler-brand-whatsapp',
+  'i-tabler-brand-telegram', 'i-tabler-brand-threads', 'i-tabler-brand-discord',
+  'i-tabler-brand-twitch', 'i-tabler-brand-spotify', 'i-tabler-brand-github',
+  'i-tabler-brand-linkedin', 'i-tabler-brand-pinterest', 'i-tabler-brand-snapchat',
+  'i-tabler-brand-line', 'i-tabler-brand-google', 'i-tabler-brand-apple',
+  'i-tabler-brand-shopee', 'i-tabler-brand-tidal', 'i-tabler-brand-soundcloud',
+  'i-tabler-link', 'i-tabler-world', 'i-tabler-mail', 'i-tabler-phone',
+  'i-tabler-map-pin', 'i-tabler-shopping-cart', 'i-tabler-shopping-bag',
+  'i-tabler-star', 'i-tabler-heart', 'i-tabler-gift', 'i-tabler-coffee',
+  'i-tabler-music', 'i-tabler-video', 'i-tabler-camera', 'i-tabler-wallet',
+  'i-tabler-calendar', 'i-tabler-download', 'i-tabler-book', 'i-tabler-ticket',
+  'i-tabler-bolt', 'i-tabler-flame', 'i-tabler-crown', 'i-tabler-rocket',
+]
+const iconColorPresets = ['#111111', '#ffffff', '#3358ff', '#E1306C', '#25D366', '#FF0000', '#FF6900', '#7c3aed']
+// True kalau nilai icon adalah NAMA icon (bukan URL upload/gambar)
+function isIconName(v: any): boolean {
+  const s = (v || '').toString()
+  return s.startsWith('i-') && !s.startsWith('/api/file/') && !/^https?:/.test(s)
+}
+function pickLinkIcon(name: string) {
+  if (!editingLink.value) return
+  if (editingLink.value.icon === name) { editingLink.value.icon = ''; return } // toggle off
+  editingLink.value.icon = name
+  if (!editingLink.value.icon_color) editingLink.value.icon_color = getLinkMeta(editingLink.value.type).color || '#3358ff'
+}
+function setIconColor(c: string) { if (editingLink.value) editingLink.value.icon_color = c }
+function resetLinkIcon() { if (editingLink.value) { editingLink.value.icon = ''; editingLink.value.icon_color = '' } }
 async function uploadLinkIcon(e: Event) {
   const input = e.target as HTMLInputElement
   const raw = input.files?.[0]
@@ -1008,6 +1068,7 @@ async function uploadLinkIcon(e: Event) {
     const fd = new FormData(); fd.append('file', file)
     const r = await $fetch<{ url: string }>('/api/member/upload', { method: 'POST', body: fd })
     editingLink.value.icon = r.url
+    editingLink.value.icon_color = '' // gambar upload tidak diwarnai
   } catch (err: any) {
     iconError.value = err?.data?.statusMessage || err?.message || 'Upload gagal.'
   } finally { iconUploading.value = false; input.value = '' }
