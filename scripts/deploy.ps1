@@ -180,30 +180,81 @@ Write-Host "==> Remote command:"
 Write-Host "    $remoteCmd"
 Write-Host ""
 
+$deployConfirmed = $false
+
 if ($DryRun) {
     Write-Host "    [DryRun] Would trigger webhook."
 } elseif ($shellToken -and $triggerUrl) {
     Write-Host "==> Triggering $triggerUrl ..."
-    $response = & curl.exe -s -X POST $triggerUrl `
+
+    # Capture HTTP status separately from body so a silent 4xx/5xx can't hide as success.
+    $tmpBody = Join-Path $env:TEMP "deploy-trigger-response.json"
+    $httpCode = & curl.exe -s -o $tmpBody -w "%{http_code}" -X POST $triggerUrl `
         -H "X-Token: $shellToken" `
         --data-urlencode "cmd=$remoteCmd"
-    Write-Host ""
-    Write-Host "==> Server response:"
-    Write-Host $response
+    $curlExit = $LASTEXITCODE
+    $response = if (Test-Path $tmpBody) { Get-Content $tmpBody -Raw } else { "" }
+    Remove-Item $tmpBody -Force -ErrorAction SilentlyContinue
 
-    # Check if all steps succeeded
-    try {
-        $json = $response | ConvertFrom-Json
-        $failed = $json.steps | Where-Object { $_.ok -eq $false }
-        if ($failed) {
-            Write-Warning "One or more steps failed:"
-            $failed | ForEach-Object { Write-Warning "  Step $($_.step): $($_.cmd)" }
-        } else {
-            Write-Host "==> All steps OK."
+    Write-Host ""
+    Write-Host "==> HTTP status: $httpCode"
+    Write-Host "==> Server response:"
+    Write-Host $(if ($response) { $response } else { "(empty response)" })
+    Write-Host ""
+
+    # -- Hard validation. Any of these failing means the remote deploy did NOT
+    #    happen, even if curl itself exited 0. Do not print a success message
+    #    unless we can actually prove the remote commands ran.
+    $failReasons = @()
+
+    if ($curlExit -ne 0) { $failReasons += "curl exited with code $curlExit (network/connection error)" }
+    if ($httpCode -notmatch '^2\d\d$') { $failReasons += "HTTP status was $httpCode (expected 2xx)" }
+    if ([string]::IsNullOrWhiteSpace($response)) { $failReasons += "response body was empty" }
+
+    $json = $null
+    if ($failReasons.Count -eq 0) {
+        try {
+            $json = $response | ConvertFrom-Json -ErrorAction Stop
+        } catch {
+            $failReasons += "response is not valid JSON"
         }
-    } catch {
-        Write-Warning "Could not parse response as JSON - check output above."
     }
+
+    if ($failReasons.Count -eq 0) {
+        if (-not $json.steps -or @($json.steps).Count -eq 0) {
+            $failReasons += "response JSON has no 'steps' array - nothing to confirm"
+        } else {
+            $failed = @($json.steps) | Where-Object { $_.ok -ne $true }
+            if ($failed) {
+                $failReasons += "one or more remote steps reported failure:"
+                $failed | ForEach-Object { $failReasons += "    step $($_.step): $($_.cmd)" }
+            }
+        }
+    }
+
+    # Final proof: the remote command chain ends with `echo DEPLOY_OK`. If that
+    # literal string isn't anywhere in the response, treat the deploy as unconfirmed
+    # even if every individual step claimed ok:true.
+    if ($failReasons.Count -eq 0 -and $response -notmatch 'DEPLOY_OK') {
+        $failReasons += "response did not contain 'DEPLOY_OK' - remote command likely never completed"
+    }
+
+    if ($failReasons.Count -gt 0) {
+        Write-Host ""
+        Write-Error "==> DEPLOY NOT CONFIRMED. The zip was uploaded but the remote extract/restart could NOT be verified:"
+        $failReasons | ForEach-Object { Write-Warning "  - $_" }
+        Write-Host ""
+        Write-Host "    Run this manually on the server (cPanel Terminal or SSH) instead:"
+        Write-Host ""
+        Write-Host "    $remoteCmd"
+        Write-Host ""
+        Write-Host "    Then verify with:"
+        Write-Host "    curl -s https://lakara.id/ | grep -o '<title>[^<]*</title>'"
+        exit 1
+    }
+
+    Write-Host "==> All steps OK. Remote deploy confirmed (DEPLOY_OK received)."
+    $deployConfirmed = $true
 } else {
     Write-Host "==> SHELL_TOKEN or TRIGGER_URL not configured."
     Write-Host "    Run this manually on the server (cPanel Terminal or SSH):"
@@ -215,6 +266,28 @@ if ($DryRun) {
 if (-not $DryRun -and (Test-Path $ZipPath)) {
     Remove-Item $ZipPath -Force
     Write-Host "==> Local zip removed."
+}
+
+# -- Step 4: Live sanity check --------------------------------------------------
+# Belt-and-suspenders: even a "DEPLOY_OK" response doesn't prove the live site
+# actually changed (e.g. app didn't reload). Fetch the homepage title so the
+# person running this sees real evidence, not just a trusted log line.
+if (-not $DryRun -and $deployConfirmed) {
+    Write-Host ""
+    Write-Host "==> Sanity check: fetching https://lakara.id/ ..."
+    Start-Sleep -Seconds 2
+    try {
+        $html = & curl.exe -s "https://lakara.id/?_cachebust=$([DateTimeOffset]::UtcNow.ToUnixTimeSeconds())"
+        if ($html -match '<title>([^<]*)</title>') {
+            Write-Host "    Live <title>: $($Matches[1])"
+        } else {
+            Write-Warning "    Could not find <title> in response - check the site manually."
+        }
+    } catch {
+        Write-Warning "    Sanity check request failed: $_"
+    }
+    Write-Host "    If this still looks stale, the app may not have reloaded -"
+    Write-Host "    restart it manually via cPanel Node.js App Manager (Stop, then Start)."
 }
 
 Write-Host ""
