@@ -36,10 +36,20 @@
           <input type="file" accept="image/gif" class="hidden" :disabled="uploading" @change="onUploadGif" />
         </label>
 
-        <button v-if="store?.logo" type="button" :disabled="uploading" @click="removePhoto"
-          class="text-xs font-semibold px-3 py-2 rounded-lg text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors">
-          Hapus
-        </button>
+        <!-- Hapus dengan konfirmasi (biar nggak kepencet langsung hapus) -->
+        <template v-if="store?.logo">
+          <button v-if="!confirmingDelete" type="button" :disabled="uploading" @click="confirmingDelete = true"
+            class="text-xs font-semibold px-3 py-2 rounded-lg text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors">
+            Hapus
+          </button>
+          <span v-else class="flex items-center gap-1.5">
+            <span class="text-xs text-slate-500">Hapus foto?</span>
+            <button type="button" :disabled="uploading" @click="confirmRemove"
+              class="text-xs font-bold px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors">Ya</button>
+            <button type="button" :disabled="uploading" @click="confirmingDelete = false"
+              class="text-xs font-semibold px-3 py-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors">Batal</button>
+          </span>
+        </template>
       </div>
       <p class="text-xs text-slate-400">
         JPG/PNG otomatis dikompres.
@@ -66,6 +76,7 @@ const { compress } = useImageCompress()
 const uploading = ref(false)
 const error     = ref('')
 const ok        = ref(false)
+const confirmingDelete = ref(false)
 
 async function persist(logoUrl: string) {
   const res = await $fetch<{ ok: boolean; data: any }>('/api/member/store', {
@@ -114,10 +125,11 @@ async function onUploadGif(e: Event) {
   }
 }
 
-async function removePhoto() {
+async function confirmRemove() {
   error.value = ''; uploading.value = true
   try {
     await persist('')
+    confirmingDelete.value = false
   } catch (err: any) {
     error.value = err?.data?.statusMessage || 'Gagal menghapus foto.'
   } finally {

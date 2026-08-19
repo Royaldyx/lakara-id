@@ -3,6 +3,12 @@
     <Head>
       <Title>Blog & Artikel — Lakara</Title>
       <Meta name="description" content="Tips, tutorial, dan insight seputar web development, digital marketing, esports, dan dunia kreatif dari tim Lakara." />
+      <Link rel="canonical" href="https://lakara.id/artikel" />
+      <Meta property="og:title" content="Blog & Artikel — Lakara" />
+      <Meta property="og:description" content="Tips, tutorial, dan insight seputar web development, digital marketing, esports, dan dunia kreatif dari tim Lakara." />
+      <Meta property="og:type" content="website" />
+      <Meta property="og:url" content="https://lakara.id/artikel" />
+      <Meta property="og:image" content="https://lakara.id/og-cover.png" />
     </Head>
 
     <!-- Hero -->

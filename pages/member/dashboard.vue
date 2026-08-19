@@ -14,10 +14,18 @@
       </div>
       <div class="flex-1 min-w-0">
         <div class="font-bold text-slate-900 truncate">{{ store?.name }}</div>
-        <a v-if="store?.slug" :href="`/${store.slug}`" target="_blank"
-          class="text-xs font-mono hover:underline block truncate" :style="{ color: store?.primary_color }">
-          lakara.id/{{ store.slug }}
-        </a>
+        <div class="flex items-center gap-1.5 min-w-0">
+          <a v-if="store?.slug" :href="`/${store.slug}`" target="_blank"
+            class="text-xs font-mono hover:underline truncate" :style="{ color: store?.primary_color }">
+            lakara.id/{{ store.slug }}
+          </a>
+          <button v-if="store?.slug" @click="copyBioLink" :title="copiedBio ? 'Tersalin!' : 'Salin link'"
+            class="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition"
+            :class="copiedBio ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-500 hover:text-[#3358ff] hover:bg-[#3358ff]/10'">
+            <UIcon :name="copiedBio ? 'i-tabler-check' : 'i-tabler-copy'" class="w-3.5 h-3.5" />
+            {{ copiedBio ? 'Tersalin' : 'Salin' }}
+          </button>
+        </div>
         <p class="text-xs text-slate-500 mt-0.5 truncate">{{ store?.tagline }}</p>
       </div>
       <span class="px-3 py-1 rounded-full text-xs font-bold flex-shrink-0"
@@ -224,6 +232,16 @@ const lockedPerks = ['Link tanpa batas', 'Font kustom', 'Analitik klik', 'Upload
 
 // QR Code link bio (via api.qrserver.com — zero dependency)
 const bioUrl = computed(() => `https://lakara.id/${store.value?.slug || ''}`)
+
+// Salin link bio 1-tap
+const copiedBio = ref(false)
+async function copyBioLink() {
+  try {
+    await navigator.clipboard.writeText(bioUrl.value)
+    copiedBio.value = true
+    setTimeout(() => copiedBio.value = false, 2000)
+  } catch { /* ignore */ }
+}
 const qrUrl  = computed(() => `https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=12&data=${encodeURIComponent(bioUrl.value)}`)
 async function downloadQr() {
   try {

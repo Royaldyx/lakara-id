@@ -129,6 +129,12 @@
           <button @click="form.social_style = 'outline'" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-lg border-2 transition-colors" :class="form.social_style === 'outline' ? 'border-[#3358ff] text-[#3358ff] bg-[#3358ff]/5' : 'border-slate-200 text-slate-600'">Outline</button>
           <button @click="form.social_style = 'color'" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-lg border-2 transition-colors" :class="form.social_style === 'color' ? 'border-[#3358ff] text-[#3358ff] bg-[#3358ff]/5' : 'border-slate-200 text-slate-600'">Berwarna</button>
         </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-500">Ukuran:</span>
+          <button v-for="sz in sizeOptions" :key="sz.key" @click="form.social_size = sz.key" type="button"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border-2 transition-colors"
+            :class="form.social_size === sz.key ? 'border-[#3358ff] text-[#3358ff] bg-[#3358ff]/5' : 'border-slate-200 text-slate-600'">{{ sz.label }}</button>
+        </div>
         <div v-for="(s, i) in form.socials" :key="i" class="flex items-center gap-2">
           <select v-model="s.type" class="w-32 border border-slate-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3358ff]/30 flex-shrink-0">
             <option v-for="p in socialPlatforms" :key="p.key" :value="p.key">{{ p.label }}</option>
@@ -137,6 +143,35 @@
           <button @click="form.socials.splice(i, 1)" type="button" class="text-red-400 hover:text-red-600 flex-shrink-0"><UIcon name="i-tabler-trash" class="w-4 h-4" /></button>
         </div>
         <p v-if="!form.socials.length" class="text-sm text-slate-400 italic">Belum ada ikon sosial. Klik "Tambah".</p>
+      </div>
+
+      <!-- Ikon Link (ukuran / bentuk / sembunyikan) -->
+      <div class="bg-white border border-slate-100 rounded-2xl p-5 space-y-4">
+        <div>
+          <h2 class="font-bold text-slate-900">Ikon Link</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Atur tampilan ikon di setiap tombol link</p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-xs text-slate-500 w-14">Ukuran:</span>
+          <button v-for="sz in sizeOptions" :key="sz.key" @click="form.icon_size = sz.key" type="button"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border-2 transition-colors"
+            :class="form.icon_size === sz.key ? 'border-[#3358ff] text-[#3358ff] bg-[#3358ff]/5' : 'border-slate-200 text-slate-600'">{{ sz.label }}</button>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-xs text-slate-500 w-14">Bentuk:</span>
+          <button v-for="sh in shapeOptions" :key="sh.key" @click="form.icon_shape = sh.key" type="button"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border-2 transition-colors flex items-center gap-1.5"
+            :class="form.icon_shape === sh.key ? 'border-[#3358ff] text-[#3358ff] bg-[#3358ff]/5' : 'border-slate-200 text-slate-600'">
+            <span class="w-3.5 h-3.5 bg-current" :class="sh.key === 'circle' ? 'rounded-full' : sh.key === 'rounded' ? 'rounded' : ''" /> {{ sh.label }}</button>
+        </div>
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-sm text-slate-700">Sembunyikan semua ikon</span>
+          <button @click="form.icon_hidden = !form.icon_hidden" type="button"
+            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+            :class="form.icon_hidden ? 'bg-[#3358ff]' : 'bg-slate-200'">
+            <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform" :class="form.icon_hidden ? 'translate-x-6' : 'translate-x-1'" />
+          </button>
+        </div>
       </div>
 
       <!-- Verified Badge (Premium) -->
@@ -188,9 +223,22 @@
 
       <div v-else class="space-y-2">
         <div v-for="(link, idx) in form.links" :key="link.id"
-          class="relative flex items-center gap-3 p-3 border rounded-xl transition-colors min-w-0 overflow-hidden"
-          :class="link.enabled ? 'border-slate-200 bg-white' : 'border-slate-100 bg-slate-50/60'">
+          draggable="true"
+          @dragstart="onDragStart(idx, $event)"
+          @dragover.prevent="onDragOverRow(idx)"
+          @drop="onDropRow(idx)"
+          @dragend="onDragEnd"
+          class="relative flex items-center gap-2 p-3 border rounded-xl transition-all min-w-0 overflow-hidden"
+          :class="[
+            link.enabled ? 'border-slate-200 bg-white' : 'border-slate-100 bg-slate-50/60',
+            dragIdx === idx ? 'opacity-40' : '',
+            dragOverIdx === idx && dragIdx !== idx ? 'ring-2 ring-[#3358ff]/40 border-[#3358ff]' : '',
+          ]">
           <div v-if="link.featured && tier !== 'free'" class="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full" />
+          <!-- Grip handle (drag) -->
+          <div class="hidden sm:flex items-center text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing flex-shrink-0" title="Tarik untuk urutkan">
+            <UIcon name="i-tabler-grip-vertical" class="w-4 h-4" />
+          </div>
           <div v-if="isIconName(link.icon)" class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 border border-slate-100 bg-slate-50"
             :style="{ color: link.icon_color || getLinkMeta(link.type).color }">
             <UIcon :name="link.icon" class="w-5 h-5" />
@@ -229,9 +277,14 @@
 
       <!-- Template -->
       <div class="bg-white border border-slate-100 rounded-2xl p-5 space-y-4">
-        <div>
-          <h2 class="font-bold text-slate-900">Template</h2>
-          <p class="text-sm text-slate-500 mt-0.5">Pilih gaya siap pakai. Warna & wallpaper otomatis diatur.</p>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="font-bold text-slate-900">Template</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Pilih gaya siap pakai. Warna & wallpaper otomatis diatur.</p>
+          </div>
+          <button @click="openTemplateGallery(false)" type="button" class="flex-shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl bg-[#3358ff]/10 text-[#3358ff] hover:bg-[#3358ff]/20 transition">
+            <UIcon name="i-tabler-palette" class="w-4 h-4" /> Galeri Tema
+          </button>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <button v-for="t in templates" :key="t.key" @click="applyTemplate(t)"
@@ -610,11 +663,40 @@
               </div>
 
               <!-- Featured -->
-              <div v-if="tier !== 'free' && editingLink.type !== 'gif'" class="flex items-center justify-between border-t border-slate-100 pt-4">
-                <div><div class="text-sm font-medium text-slate-700">Link Unggulan</div><div class="text-xs text-slate-400">Tampil lebih besar di halaman bio</div></div>
-                <button @click="editingLink.featured = !editingLink.featured" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors" :class="editingLink.featured ? 'bg-yellow-400' : 'bg-slate-200'">
-                  <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform" :class="editingLink.featured ? 'translate-x-6' : 'translate-x-1'" />
-                </button>
+              <div v-if="tier !== 'free' && editingLink.type !== 'gif'" class="border-t border-slate-100 pt-4 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div><div class="text-sm font-medium text-slate-700">Link Unggulan</div><div class="text-xs text-slate-400">Tampil lebih besar di halaman bio</div></div>
+                  <button @click="editingLink.featured = !editingLink.featured" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors" :class="editingLink.featured ? 'bg-yellow-400' : 'bg-slate-200'">
+                    <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform" :class="editingLink.featured ? 'translate-x-6' : 'translate-x-1'" />
+                  </button>
+                </div>
+
+                <!-- Custom tampilan featured -->
+                <div v-if="editingLink.featured" class="bg-amber-50/50 border border-amber-100 rounded-xl p-3 space-y-3">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="text-xs font-medium text-slate-600 block mb-1">Warna tombol</label>
+                      <div class="flex items-center gap-1.5">
+                        <input type="color" :value="editingLink.feat_bg || '#f97316'" @input="editingLink.feat_bg = ($event.target as HTMLInputElement).value" class="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer p-0.5 flex-shrink-0" />
+                        <button v-if="editingLink.feat_bg" @click="editingLink.feat_bg = ''" type="button" class="text-xs text-slate-400 hover:text-red-500">reset</button>
+                        <span v-else class="text-xs text-slate-400">default aksen</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="text-xs font-medium text-slate-600 block mb-1">Warna teks</label>
+                      <div class="flex items-center gap-1.5">
+                        <input type="color" :value="editingLink.feat_text || '#ffffff'" @input="editingLink.feat_text = ($event.target as HTMLInputElement).value" class="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer p-0.5 flex-shrink-0" />
+                        <button v-if="editingLink.feat_text" @click="editingLink.feat_text = ''" type="button" class="text-xs text-slate-400 hover:text-red-500">reset</button>
+                        <span v-else class="text-xs text-slate-400">putih</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="text-xs font-medium text-slate-600 block mb-1">Badge label <span class="text-slate-400">(opsional, maks 12)</span></label>
+                    <input v-model="editingLink.feat_badge" type="text" maxlength="12" placeholder="HOT / NEW / PROMO"
+                      class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300/40" />
+                  </div>
+                </div>
               </div>
             </div>
             <div class="px-5 pb-5 pt-2 flex gap-2 flex-shrink-0 border-t border-slate-100">
@@ -631,6 +713,48 @@
       <Transition name="toast">
         <div v-if="toast" class="fixed bottom-28 lg:bottom-6 left-1/2 -translate-x-1/2 z-[60] max-w-[92vw] bg-slate-900 text-white text-sm font-medium px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2">
           <UIcon :name="toastType === 'error' ? 'i-tabler-x' : 'i-tabler-check'" class="w-4 h-4" /> {{ toast }}
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Galeri Tema (onboarding 1-klik) -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="showTemplateGallery" class="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm" @click.self="closeTemplateGallery">
+          <div class="bg-white w-full sm:max-w-2xl sm:rounded-3xl rounded-t-3xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="p-5 border-b border-slate-100 flex items-center gap-3 flex-shrink-0">
+              <div class="w-10 h-10 rounded-xl bg-[#3358ff]/10 flex items-center justify-center flex-shrink-0">
+                <UIcon name="i-tabler-palette" class="w-5 h-5 text-[#3358ff]" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-extrabold text-slate-900">{{ onboardingMode ? 'Pilih tema buat mulai 🎨' : 'Ganti Tema' }}</h3>
+                <p class="text-xs text-slate-500">Sekali klik, warna + font + gaya langsung jadi. Bisa diubah lagi kapan aja.</p>
+              </div>
+              <button @click="closeTemplateGallery" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"><UIcon name="i-tabler-x" class="w-5 h-5" /></button>
+            </div>
+            <div class="p-5 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <button v-for="t in templates" :key="t.key" @click="pickTheme(t)" :disabled="applyingTheme"
+                class="rounded-2xl border-2 overflow-hidden text-left transition-all relative hover:-translate-y-0.5 disabled:opacity-60"
+                :class="form.template === t.key ? 'border-[#3358ff] ring-2 ring-[#3358ff]/20' : 'border-slate-200 hover:border-[#3358ff]/50'">
+                <span v-if="t.premium && tier !== 'premium'" class="absolute top-1.5 right-1.5 z-10 text-[9px] font-bold bg-amber-400 text-amber-950 px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5">
+                  <UIcon name="i-tabler-crown" class="w-2.5 h-2.5" /> PREMIUM
+                </span>
+                <div class="h-28 flex flex-col items-center justify-center gap-1.5 px-2" :style="templatePreviewBg(t)">
+                  <span class="w-8 h-8 rounded-full bg-white/30 mb-0.5" />
+                  <span class="text-[11px] font-bold leading-none" :style="{ ...getFontStyle(t.font_family), color: t.title_color }">Aa</span>
+                  <span class="text-[10px] font-bold px-4 py-1 rounded-lg w-full text-center truncate" :style="templatePreviewBtn(t)">Link</span>
+                  <span class="text-[10px] font-bold px-4 py-1 rounded-lg w-full text-center truncate" :style="templatePreviewBtn(t)">Link</span>
+                </div>
+                <div class="px-2.5 py-2 text-xs font-semibold text-slate-700 flex items-center justify-between">
+                  {{ t.label }}
+                  <UIcon v-if="applyingTheme && pickingKey === t.key" name="i-tabler-loader-2" class="w-3.5 h-3.5 animate-spin text-[#3358ff]" />
+                </div>
+              </button>
+            </div>
+            <div v-if="onboardingMode" class="p-4 border-t border-slate-100 flex-shrink-0">
+              <button @click="closeTemplateGallery" class="w-full py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700">Nanti aja, aku atur sendiri</button>
+            </div>
+          </div>
         </div>
       </Transition>
     </Teleport>
@@ -712,6 +836,49 @@ function applyTemplate(t: any) {
   }
   form.template = t.key
   showToast(tier.value === 'free' ? `Template ${t.label} diterapkan` : `Template ${t.label} diterapkan (warna + font + gaya)`)
+}
+
+// ── Galeri Tema (onboarding 1-klik) ──
+const showTemplateGallery = ref(false)
+const onboardingMode      = ref(false)
+const applyingTheme       = ref(false)
+const pickingKey          = ref('')
+
+function openTemplateGallery(onboarding = false) {
+  onboardingMode.value = onboarding
+  showTemplateGallery.value = true
+}
+function closeTemplateGallery() {
+  showTemplateGallery.value = false
+  if (onboardingMode.value) markOnboardSeen()
+  onboardingMode.value = false
+}
+async function pickTheme(t: any) {
+  if (t.premium && tier.value !== 'premium') {
+    showToast(`Template "${t.label}" khusus Premium — upgrade untuk pakai`, 'error')
+    return
+  }
+  applyingTheme.value = true
+  pickingKey.value = t.key
+  applyTemplate(t)
+  try {
+    await save()                 // langsung simpan biar "langsung jadi"
+    markOnboardSeen()
+    showTemplateGallery.value = false
+    onboardingMode.value = false
+  } finally {
+    applyingTheme.value = false
+    pickingKey.value = ''
+  }
+}
+function onboardKey() { return `lakara_onboard_theme_${store.value?.id || ''}` }
+function markOnboardSeen() { try { localStorage.setItem(onboardKey(), '1') } catch { /* ignore */ } }
+function onboardSeen() { try { return localStorage.getItem(onboardKey()) === '1' } catch { return true } }
+// Member baru = belum pilih template & belum ada link → tawarin galeri sekali
+function maybeOfferOnboarding() {
+  if (!store.value || onboardSeen()) return
+  const fresh = (form.template === 'none' || !form.template) && (form.links?.length || 0) === 0
+  if (fresh) setTimeout(() => openTemplateGallery(true), 600)
 }
 
 // Wallpaper bg types
@@ -811,10 +978,22 @@ const form = reactive({
   hide_branding: false,
   verified: false, show_products: false, button_animation: 'none',
   show_name: true, show_bio: true, font_family: 'default', social_style: 'outline',
+  icon_size: 'md', icon_shape: 'rounded', icon_hidden: false, social_size: 'md',
   socials: [] as { type: string; url: string }[],
   links: [] as any[],
   og_image: '', og_sig: '',
 })
+
+const sizeOptions = [
+  { key: 'sm', label: 'Kecil' },
+  { key: 'md', label: 'Sedang' },
+  { key: 'lg', label: 'Besar' },
+]
+const shapeOptions = [
+  { key: 'circle',  label: 'Bulat' },
+  { key: 'rounded', label: 'Rounded' },
+  { key: 'square',  label: 'Kotak' },
+]
 
 const buttonAnimations = [
   { key: 'none',   label: 'Tidak ada' },
@@ -952,6 +1131,10 @@ onMounted(() => {
     form.show_bio = d.show_bio !== false
     form.font_family = d.font_family ?? 'default'
     form.social_style = d.social_style ?? 'outline'
+    form.icon_size = d.icon_size ?? 'md'
+    form.icon_shape = d.icon_shape ?? 'rounded'
+    form.icon_hidden = d.icon_hidden === true
+    form.social_size = d.social_size ?? 'md'
     form.socials = Array.isArray(d.socials) ? d.socials.map((s: any) => ({ type: s.type || 'instagram', url: s.url || '' })) : []
     form.links = (d.links ?? []).map((l: any) => ({ image: '', ...l }))
     form.og_image = d.og_image ?? ''
@@ -961,6 +1144,7 @@ onMounted(() => {
     form.accent_color = store.value.primary_color || '#3358ff'
     form.button_color = store.value.primary_color || '#3358ff'
   }
+  maybeOfferOnboarding()
 })
 
 // Analytics
@@ -1127,6 +1311,21 @@ function saveEditLink() {
 function deleteLink(idx: number) { form.links.splice(idx, 1) }
 function moveUp(idx: number) { if (idx === 0) return; [form.links[idx - 1], form.links[idx]] = [form.links[idx], form.links[idx - 1]] }
 function moveDown(idx: number) { if (idx === form.links.length - 1) return; [form.links[idx], form.links[idx + 1]] = [form.links[idx + 1], form.links[idx]] }
+
+// Drag-and-drop reorder (desktop). Mobile pakai panah ↑↓.
+const dragIdx     = ref(-1)
+const dragOverIdx = ref(-1)
+function onDragStart(idx: number, e: DragEvent) { dragIdx.value = idx; if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move' }
+function onDragOverRow(idx: number) { dragOverIdx.value = idx }
+function onDropRow(idx: number) {
+  const from = dragIdx.value
+  if (from !== -1 && from !== idx) {
+    const [moved] = form.links.splice(from, 1)
+    form.links.splice(idx, 0, moved)
+  }
+  dragIdx.value = -1; dragOverIdx.value = -1
+}
+function onDragEnd() { dragIdx.value = -1; dragOverIdx.value = -1 }
 
 // ── OG image dinamis: gambar kartu share 1200x630 di browser, lalu upload ──
 function loadImg(src: string): Promise<HTMLImageElement | null> {

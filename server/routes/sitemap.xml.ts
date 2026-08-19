@@ -39,12 +39,22 @@ export default defineEventHandler(async (event) => {
     return url(`/portfolio/${i.slug}`, '0.7', 'monthly', date)
   })
 
-  // Dynamic: artikel (masih flat-file)
+  // Dynamic: artikel (masih flat-file) — dengan image sitemap
+  const esc = (s: string) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   const artikel = readJson<any>('artikel.json')
     .filter((i: any) => i.published !== false)
-  const artikelUrls = artikel.map((i: any) =>
-    url(`/artikel/${i.slug}`, '0.7', 'weekly', i.updated_at?.split('T')[0] || '')
-  )
+  const artikelUrls = artikel.map((i: any) => {
+    const lastmod = i.updated_at?.split('T')[0] || i.created_at?.split('T')[0] || ''
+    const img = i.og_image || i.image || ''
+    return `
+  <url>
+    <loc>${BASE}/artikel/${esc(i.slug)}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    ${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}
+    ${img ? `<image:image><image:loc>${esc(img)}</image:loc><image:title>${esc(i.title)}</image:title></image:image>` : ''}
+  </url>`
+  })
 
   // Dynamic: toko klien + produk — dari MySQL
   let storeUrls: string[]  = []
@@ -65,7 +75,7 @@ export default defineEventHandler(async (event) => {
   const today = new Date().toISOString().split('T')[0]
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${staticPages.map(p => url(p.loc, p.priority, p.changefreq, today)).join('')}
 ${portfolioUrls.join('')}
 ${artikelUrls.join('')}

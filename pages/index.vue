@@ -36,15 +36,25 @@
               >
                 Konsultasi Gratis
               </UButton>
-              <UButton to="#layanan" size="xl" variant="outline" color="gray" class="font-semibold">
+              <UButton to="/member/register" size="xl" variant="outline" class="font-semibold" style="border-color: #7c3aed; color: #7c3aed;" icon="i-tabler-link-plus">
+                Coba Lakara Gratis
+              </UButton>
+              <UButton to="#layanan" size="xl" variant="ghost" color="gray" class="font-semibold">
                 Lihat Layanan
               </UButton>
-              <UButton to="/member/register" size="xl" variant="outline" class="font-semibold" style="border-color: #7c3aed; color: #7c3aed;" icon="i-tabler-link">
-                Buat Link Bio
-              </UButton>
-              <UButton to="/member/register" size="xl" variant="outline" class="font-semibold" style="border-color: #0ea5e9; color: #0ea5e9;" icon="i-tabler-shopping-bag">
-                Buat Toko
-              </UButton>
+            </div>
+
+            <!-- Download app -->
+            <div class="mt-6 flex items-center gap-3 flex-wrap">
+              <a :href="PLAYSTORE_URL" target="_blank" rel="noopener"
+                class="inline-flex items-center gap-3 bg-black text-white rounded-xl px-5 py-2.5 hover:bg-gray-800 transition shadow-lg shadow-gray-200">
+                <UIcon name="i-tabler-brand-google-play" class="w-7 h-7" />
+                <span class="text-left leading-tight">
+                  <span class="block text-[10px] opacity-80 tracking-wide">DOWNLOAD DI</span>
+                  <span class="block text-base font-semibold -mt-0.5">Google Play</span>
+                </span>
+              </a>
+              <span class="text-sm text-gray-400">Kelola link bio &amp; toko langsung dari HP</span>
             </div>
 
             <!-- trust badges -->
@@ -462,6 +472,14 @@
                 Tanya dulu
               </UButton>
             </div>
+            <a :href="PLAYSTORE_URL" target="_blank" rel="noopener"
+              class="inline-flex items-center gap-3 bg-black text-white rounded-xl px-5 py-2.5 mt-4 hover:bg-gray-800 transition">
+              <UIcon name="i-tabler-brand-google-play" class="w-6 h-6" />
+              <span class="text-left leading-tight">
+                <span class="block text-[10px] opacity-80 tracking-wide">DOWNLOAD APP DI</span>
+                <span class="block text-sm font-semibold -mt-0.5">Google Play</span>
+              </span>
+            </a>
           </div>
 
         </div>
@@ -666,10 +684,14 @@
 <script setup lang="ts">
 const { CONTACT, wa } = useSiteConfig()
 
-// SEO dari admin settings
-await useSeoPage('home', {
-  title:       'Lakara — Solusi Digital Terpercaya untuk Bisnis Anda',
-  description: 'PT Lakara Solusi Kreatif — Mitra digital terpercaya untuk website development, mobile app, talent esports, dan social media growth. Dipercaya 50+ klien.',
+const PLAYSTORE_URL = 'https://play.google.com/store/apps/details?id=id.lakara.member'
+
+// SEO: defaults di-render di SSR (andal), admin /api/seo override di client.
+useSeoPage('home', {
+  title:       'Lakara - Jasa Website, Social Media & Talent Esports Indonesia',
+  description: 'Lakara Solusi Kreatif: jasa pembuatan website, kelola social media (SMM), Meta Ads, SEO, video TikTok, dan talent esports/host. Plus platform link bio & storefront gratis. Konsultasi gratis via WhatsApp.',
+  image:       'https://lakara.id/og-cover.png',
+  canonical:   'https://lakara.id',
 })
 
 // Testimoni & FAQ dinamis (fallback ke hardcoded jika API belum ada data)

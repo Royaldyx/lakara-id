@@ -61,9 +61,9 @@
           <!-- Social icon row -->
           <div v-if="socialList.length" class="flex flex-wrap justify-center gap-2.5 mt-4">
             <a v-for="s in socialList" :key="s.type" :href="socialHref(s)" target="_blank" rel="noopener"
-              class="w-10 h-10 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+              class="rounded-full flex items-center justify-center transition-transform hover:scale-110" :class="socialWrapClass"
               :style="socialStyle(s)" :title="s.type">
-              <UIcon :name="socialIcon(s.type)" class="w-5 h-5" />
+              <UIcon :name="socialIcon(s.type)" :class="socialIconClass" />
             </a>
           </div>
         </div>
@@ -90,19 +90,21 @@
             <img v-if="featuredLink.image" :src="featuredLink.image" alt=""
               class="absolute inset-0 w-full h-full object-cover z-0" />
             <div v-if="featuredLink.image" class="absolute inset-0 bg-black/45 z-0" />
-            <span class="relative z-10 w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm overflow-hidden"
+            <span v-if="!iconHidden" class="relative z-10 flex items-center justify-center flex-shrink-0 font-black text-sm overflow-hidden" :class="[iconWrapClass, iconShapeClass]"
               :style="isIconName(featuredLink.icon)
                 ? { color: featuredLink.icon_color || (featuredLink.image ? '#fff' : undefined) }
                 : (featuredLink.icon ? {} : (featuredLink.image ? { background: 'rgba(255,255,255,0.25)', color: '#fff' } : featuredIconStyle))">
-              <UIcon v-if="isIconName(featuredLink.icon)" :name="featuredLink.icon" class="w-4 h-4" />
+              <UIcon v-if="isIconName(featuredLink.icon)" :name="featuredLink.icon" :class="iconGlyphClass" />
               <img v-else-if="featuredLink.icon" :src="featuredLink.icon" alt="" loading="lazy" class="w-full h-full object-cover" />
               <template v-else>
-                <UIcon v-if="getMeta(featuredLink.type).icon" :name="getMeta(featuredLink.type).icon!" class="w-4 h-4" />
+                <UIcon v-if="getMeta(featuredLink.type).icon" :name="getMeta(featuredLink.type).icon!" :class="iconGlyphClass" />
                 <span v-else>{{ getMeta(featuredLink.type).emoji }}</span>
               </template>
             </span>
             <span class="relative z-10 flex-1 text-center" :style="featuredLink.image ? { color: '#fff' } : {}">{{ featuredLink.label || featuredLink.type }}</span>
-            <UIcon name="i-tabler-star-filled" class="relative z-10 w-4 h-4 opacity-70 ml-1" :style="featuredLink.image ? { color: '#fff' } : {}" />
+            <span v-if="featuredLink.feat_badge" class="relative z-10 ml-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-white/25 backdrop-blur-sm whitespace-nowrap"
+              :style="featuredLink.image ? { color: '#fff' } : {}">{{ featuredLink.feat_badge }}</span>
+            <UIcon v-else name="i-tabler-star-filled" class="relative z-10 w-4 h-4 opacity-70 ml-1" :style="featuredLink.image ? { color: '#fff' } : {}" />
           </a>
 
           <!-- Regular links -->
@@ -115,14 +117,14 @@
               <img v-if="link.image" :src="link.image" alt="" loading="lazy"
                 class="absolute inset-0 w-full h-full object-cover z-0" />
               <div v-if="link.image" class="absolute inset-0 bg-black/45 z-0" />
-              <span class="relative z-10 w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm overflow-hidden"
+              <span v-if="!iconHidden" class="relative z-10 flex items-center justify-center flex-shrink-0 font-black text-sm overflow-hidden" :class="[iconWrapClass, iconShapeClass]"
                 :style="isIconName(link.icon)
                   ? { color: link.icon_color || (link.image ? '#fff' : undefined) }
                   : (link.icon ? {} : (link.image ? { background: 'rgba(255,255,255,0.25)', color: '#fff' } : iconStyle(link)))">
-                <UIcon v-if="isIconName(link.icon)" :name="link.icon" class="w-4 h-4" />
+                <UIcon v-if="isIconName(link.icon)" :name="link.icon" :class="iconGlyphClass" />
                 <img v-else-if="link.icon" :src="link.icon" alt="" loading="lazy" class="w-full h-full object-cover" />
                 <template v-else>
-                  <UIcon v-if="getMeta(link.type).icon" :name="getMeta(link.type).icon!" class="w-4 h-4" />
+                  <UIcon v-if="getMeta(link.type).icon" :name="getMeta(link.type).icon!" :class="iconGlyphClass" />
                   <span v-else>{{ getMeta(link.type).emoji }}</span>
                 </template>
               </span>
@@ -191,6 +193,22 @@
     </div>
   </div>
 
+  <!-- Loading skeleton (saat navigasi SPA, sebelum data siap) -->
+  <div v-else-if="pending" class="min-h-screen w-full flex justify-center bg-slate-900">
+    <div class="w-full lg:w-[480px] min-h-screen px-5 py-10 flex flex-col items-center animate-pulse">
+      <div class="w-24 h-24 rounded-full bg-white/10 mb-4" />
+      <div class="w-40 h-5 rounded-lg bg-white/10 mb-2" />
+      <div class="w-56 h-3 rounded bg-white/10 mb-1.5" />
+      <div class="w-44 h-3 rounded bg-white/10 mb-6" />
+      <div class="flex gap-2.5 mb-8">
+        <div v-for="n in 4" :key="n" class="w-10 h-10 rounded-full bg-white/10" />
+      </div>
+      <div class="w-full space-y-3">
+        <div v-for="n in 5" :key="n" class="w-full h-14 rounded-2xl bg-white/10" />
+      </div>
+    </div>
+  </div>
+
   <!-- 404 -->
   <div v-else class="min-h-screen flex items-center justify-center bg-white">
     <div class="text-center">
@@ -207,7 +225,7 @@ definePageMeta({ layout: false })
 const route    = useRoute()
 const tokoSlug = route.params.toko as string
 
-const { data: res } = await useFetch('/api/stores', {
+const { data: res, pending } = await useFetch('/api/stores', {
   query: { slug: tokoSlug }, server: true,
   default: () => ({ success: false, data: null }),
 })
@@ -234,6 +252,7 @@ const DEFAULT_BIO = {
   card_style: 'default', card_bg_color: null, card_radius: 'md',
   hide_branding: false, verified: false, show_products: false, button_animation: 'none',
   show_name: true, show_bio: true, font_family: 'default', social_style: 'outline', socials: [],
+  icon_size: 'md', icon_shape: 'rounded', icon_hidden: false, social_size: 'md',
   links: [],
 }
 
@@ -326,6 +345,14 @@ function isIconName(v: any): boolean {
   const s = (v || '').toString()
   return s.startsWith('i-') && !s.startsWith('/api/file/') && !/^https?:/.test(s)
 }
+
+// Ukuran & bentuk icon (dari setting bio)
+const socialWrapClass = computed(() => ({ sm: 'w-8 h-8', md: 'w-10 h-10', lg: 'w-12 h-12' } as any)[bio.value.social_size || 'md'])
+const socialIconClass = computed(() => ({ sm: 'w-4 h-4', md: 'w-5 h-5', lg: 'w-6 h-6' } as any)[bio.value.social_size || 'md'])
+const iconHidden     = computed(() => bio.value.icon_hidden === true)
+const iconShapeClass = computed(() => ({ circle: 'rounded-full', rounded: 'rounded-xl', square: 'rounded-none' } as any)[bio.value.icon_shape || 'rounded'])
+const iconWrapClass  = computed(() => ({ sm: 'w-6 h-6', md: 'w-8 h-8', lg: 'w-10 h-10' } as any)[bio.value.icon_size || 'md'])
+const iconGlyphClass = computed(() => ({ sm: 'w-3.5 h-3.5', md: 'w-4 h-4', lg: 'w-5 h-5' } as any)[bio.value.icon_size || 'md'])
 function socialHref(s: any) {
   const url = (s.url || '').toString().trim()
   if (s.type === 'email') return url.startsWith('mailto:') ? url : 'mailto:' + url
@@ -456,8 +483,12 @@ function iconStyle(link: any) { return resolveCardStyle(link).icon }
 
 const featuredStyle = computed(() => {
   if (!featuredLink.value) return {}
-  if (featuredLink.value.image) return {}
-  return resolveCardStyle(featuredLink.value).style
+  const f = featuredLink.value
+  if (f.image) return {}
+  const base: any = { ...resolveCardStyle(f).style }
+  if (f.feat_bg)   base.background = f.feat_bg
+  if (f.feat_text) base.color = f.feat_text
+  return base
 })
 const featuredIconStyle = computed(() => {
   if (!featuredLink.value) return {}

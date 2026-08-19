@@ -47,6 +47,16 @@
               class="text-gray-400 hover:text-white"
             />
           </div>
+
+          <!-- Download app -->
+          <a :href="PLAYSTORE_URL" target="_blank" rel="noopener"
+            class="inline-flex items-center gap-2.5 bg-white/10 hover:bg-white/20 border border-white/15 rounded-xl px-4 py-2.5 mt-5 transition">
+            <UIcon name="i-tabler-brand-google-play" class="w-6 h-6 text-white" />
+            <span class="text-left leading-tight">
+              <span class="block text-[10px] text-gray-400 tracking-wide">DOWNLOAD DI</span>
+              <span class="block text-sm font-semibold text-white -mt-0.5">Google Play</span>
+            </span>
+          </a>
         </div>
 
         <!-- Link cols -->
@@ -82,6 +92,8 @@
 
 <script setup lang="ts">
 const { SOCIAL } = useSiteConfig()
+
+const PLAYSTORE_URL = 'https://play.google.com/store/apps/details?id=id.lakara.member'
 
 const footerLinks = [
   {

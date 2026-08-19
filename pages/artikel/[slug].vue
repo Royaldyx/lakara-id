@@ -3,11 +3,14 @@
     <Head>
       <Title>{{ artikel.title }} — Lakara Blog</Title>
       <Meta name="description" :content="artikel.excerpt" />
-      <Meta property="og:title" :content="artikel.title + ' . Lakara Blog'" />
+      <Meta property="og:title" :content="artikel.title + ' — Lakara Blog'" />
       <Meta property="og:description" :content="artikel.excerpt" />
       <Meta property="og:image" :content="artikel.og_image || artikel.image || ''" />
       <Meta property="og:type" content="article" />
-      <Link v-if="artikel.canonical" rel="canonical" :href="artikel.canonical" />
+      <Link rel="canonical" :href="artikel.canonical || pageUrl" />
+      <Meta property="og:url" :content="artikel.canonical || pageUrl" />
+      <Meta property="article:published_time" :content="artikel.created_at || ''" />
+      <Meta property="article:modified_time" :content="artikel.updated_at || artikel.created_at || ''" />
       <Script v-if="jsonLd" type="application/ld+json">{{ jsonLd }}</Script>
     </Head>
 
@@ -269,6 +272,9 @@ const jsonLd = computed(() => {
         image: [a.og_image || a.image || 'https://lakara.id/og-cover.png'],
         datePublished: a.created_at,
         dateModified: a.updated_at || a.created_at,
+        inLanguage: 'id-ID',
+        articleSection: a.category || 'Blog',
+        keywords: Array.isArray(a.tags) ? a.tags.join(', ') : '',
         author: {
           '@type': 'Organization',
           name: a.author || 'Tim Lakara',

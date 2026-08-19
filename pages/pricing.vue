@@ -116,6 +116,10 @@
             </UButton>
           </div>
         </div>
+        <div class="max-w-3xl mx-auto mt-8 flex items-center justify-center gap-3 flex-wrap rounded-2xl bg-emerald-50 border border-emerald-100 px-5 py-4 text-center">
+          <UIcon name="i-tabler-discount-2" class="w-5 h-5 text-emerald-600 flex-shrink-0" />
+          <p class="text-sm text-emerald-800">Harga agency SMM di pasar <strong>Rp 3–8 juta/bulan</strong>. Lakara mulai <strong class="text-emerald-700">Rp 1,5 juta/bulan</strong> — kualitas setara, harga jauh lebih hemat.</p>
+        </div>
         <p class="text-center text-xs text-gray-400 mt-5">* Minimum kontrak 3 bulan untuk hasil yang terukur. Setup fee: Rp 500rb (gratis untuk Silver ke atas).</p>
       </UContainer>
     </section>
@@ -153,8 +157,15 @@
             </div>
             <h3 class="text-lg font-extrabold text-gray-900 mb-1">{{ pkg.title }}</h3>
             <p class="text-xs text-gray-500 mb-4">{{ pkg.subtitle }}</p>
+            <div class="mb-4">
+              <div class="text-xs text-gray-400 mb-0.5">Management fee</div>
+              <span class="text-3xl font-extrabold text-gray-900">Rp {{ displayMonthly(pkg.fee) }}</span>
+              <span class="text-sm text-gray-400">/bln</span>
+              <div v-if="billing === 'yearly'" class="text-xs text-emerald-600 font-semibold mt-1">Ditagih Rp {{ yearlyTotal(pkg.fee) }}/tahun</div>
+              <div class="text-[11px] text-gray-400 mt-1.5">Fee agency pasar <span class="line-through">Rp 10jt+/bln</span> atau 15% spend</div>
+            </div>
             <div class="bg-orange-50 border border-orange-100 rounded-xl p-3 mb-4">
-              <div class="text-xs text-orange-600 font-medium mb-0.5">Budget iklan yang disiapkan klien</div>
+              <div class="text-xs text-orange-600 font-medium mb-0.5">Budget iklan (dibayar terpisah ke Meta)</div>
               <div class="text-lg font-extrabold text-orange-700">{{ pkg.budget }}</div>
             </div>
             <ul class="space-y-2 mb-6 flex-1">
@@ -176,7 +187,7 @@
             </UButton>
           </div>
         </div>
-        <p class="text-center text-xs text-gray-400">Budget iklan belum termasuk management fee. Management fee via konsultasi.</p>
+        <p class="text-center text-xs text-gray-400">Management fee (tertera di atas) terpisah dari budget iklan yang dibayar langsung ke Meta. Fee agency pasar biasanya Rp 10jt+/bln atau 15% dari spend.</p>
       </UContainer>
     </section>
 
@@ -295,6 +306,10 @@
         <div class="text-center mb-10">
           <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">Website Development</h2>
           <p class="text-gray-500">Dari landing page sederhana hingga sistem enterprise</p>
+          <div class="inline-flex items-center gap-2 mt-4 rounded-full bg-emerald-50 border border-emerald-100 px-4 py-1.5 text-xs sm:text-sm text-emerald-800">
+            <UIcon name="i-tabler-discount-2" class="w-4 h-4 text-emerald-600" />
+            Landing page pasar <strong>Rp 800rb–15jt</strong> · Lakara mulai <strong class="text-emerald-700">Rp 500rb</strong>
+          </div>
         </div>
         <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <div
@@ -546,7 +561,7 @@ const metaAdsFeatures = [
 const metaAdsPricing = [
   {
     title: 'Starter', subtitle: 'Untuk bisnis yang baru mulai beriklan', popular: false,
-    budget: 'Rp 4.000.000/bulan',
+    fee: '750.000', budget: 'Rp 4.000.000/bulan',
     items: [
       'Durasi iklan 30 hari',
       'Tampil di Feed & Story IG + FB',
@@ -558,7 +573,7 @@ const metaAdsPricing = [
   },
   {
     title: 'Professional', subtitle: 'Untuk bisnis yang ingin skala lebih besar', popular: true,
-    budget: 'Rp 7.000.000/bulan',
+    fee: '1.500.000', budget: 'Rp 7.000.000/bulan',
     items: [
       'Durasi iklan 30 hari',
       'Tampil di Feed & Story IG + FB',
@@ -571,7 +586,7 @@ const metaAdsPricing = [
   },
   {
     title: 'Business', subtitle: 'Untuk bisnis dengan target konversi tinggi', popular: false,
-    budget: 'Rp 10.000.000/bulan',
+    fee: '2.500.000', budget: 'Rp 10.000.000/bulan',
     items: [
       'Durasi iklan 30 hari',
       'Tampil di Feed & Story IG + FB',
@@ -739,6 +754,6 @@ const faqItems = [
   { label: 'Berapa lama setelah DP proyek mulai dikerjakan?', content: 'Maksimal 2-3 hari kerja setelah DP diterima, tim kami sudah mulai mengerjakan proyek Anda.' },
   { label: 'Untuk SMM, apakah bisa cancel sebelum kontrak berakhir?', content: 'Kontrak minimum 3 bulan agar hasil optimal. Perpanjangan bersifat fleksibel bulan ke bulan setelah periode awal selesai.' },
   { label: 'Untuk SEO, berapa lama sampai hasilnya kelihatan?', content: 'SEO butuh waktu. Biasanya 2-4 bulan untuk mulai melihat pergerakan ranking, dan 4-6 bulan untuk hasil signifikan di Page 1. Itu kenapa minimum kontrak 6 bulan.' },
-  { label: 'Budget Meta Ads apakah sudah termasuk dalam harga paket?', content: 'Tidak. Budget iklan yang tertera adalah budget yang perlu disiapkan klien secara terpisah untuk belanja iklan ke Meta/Facebook. Management fee Lakara dibayar terpisah via konsultasi.' },
+  { label: 'Budget Meta Ads apakah sudah termasuk dalam harga paket?', content: 'Tidak. Ada dua komponen terpisah: (1) Management fee Lakara — mulai Rp 750rb/bulan, sudah tertera di tiap paket; dan (2) Budget iklan — dibayar langsung ke Meta/Facebook sesuai nominal yang kamu siapkan. Fee pasar untuk jasa kelola Meta Ads biasanya Rp 10 juta+/bulan atau 15% dari spend, jadi Lakara jauh lebih hemat.' },
 ]
 </script>

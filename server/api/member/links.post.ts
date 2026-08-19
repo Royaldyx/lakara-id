@@ -106,6 +106,10 @@ export default defineEventHandler(async (event) => {
     icon_color: isHex(link.icon_color) ? link.icon_color : '',
     enabled:   link.enabled !== false,
     featured:  isPro && link.featured === true,
+    // custom featured (semua tier) — hanya relevan saat featured
+    feat_bg:    isHex(link.feat_bg)   ? link.feat_bg   : '',
+    feat_text:  isHex(link.feat_text) ? link.feat_text : '',
+    feat_badge: (link.feat_badge || '').toString().trim().slice(0, 12),
   }))
   const allowedLinks = isPro ? links : links.slice(0, 5)
 
@@ -160,6 +164,12 @@ export default defineEventHandler(async (event) => {
     font_family:    isPro && VALID_FONTS.includes(body.font_family) ? body.font_family : 'default',
     social_style:   ['outline', 'color'].includes(body.social_style) ? body.social_style : 'outline',
     socials:        sanitizeSocials(body.socials),
+
+    // Icon & social sizing (semua tier)
+    icon_size:      ['sm', 'md', 'lg'].includes(body.icon_size) ? body.icon_size : 'md',
+    icon_shape:     ['circle', 'rounded', 'square'].includes(body.icon_shape) ? body.icon_shape : 'rounded',
+    icon_hidden:    body.icon_hidden === true,
+    social_size:    ['sm', 'md', 'lg'].includes(body.social_size) ? body.social_size : 'md',
 
     // OG share image (1200x630 PNG auto-generated di browser, di-upload)
     og_image:       (body.og_image || '').toString().startsWith('/api/file/') ? body.og_image.toString().slice(0, 300) : '',

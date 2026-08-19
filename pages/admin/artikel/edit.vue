@@ -290,6 +290,24 @@ async function save(mode: 'published' | 'draft') {
   if (errors.value.length) { window.scrollTo({ top: 0, behavior: 'smooth' }); return }
 
   saving.value = true
+
+  // ⚠️ ANTI-WIPE: ambil daftar TERBARU dari server sebelum menimpa.
+  // Jangan pakai allArtikel.value (bisa gagal load → default []) karena
+  // menyimpan onto [] = menghapus semua artikel lain.
+  let current: any[]
+  try {
+    const fresh = await $fetch<any[]>('/api/admin/artikel', { headers: authHeaders.value })
+    if (!Array.isArray(fresh)) throw new Error('not-array')
+    current = fresh
+  } catch {
+    saving.value = false
+    errors.value = ['Gagal memuat daftar artikel terbaru dari server. Refresh halaman lalu coba lagi — ini mencegah artikel lain ikut terhapus.']
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    return
+  }
+  // Cegah tambah artikel baru kalau server malah balas kosong padahal seharusnya ada
+  // (biarkan lanjut hanya jika memang benar-benar belum ada artikel)
+
   const tags   = form.tagsRaw.split(',').map((t: string) => t.trim()).filter(Boolean)
 
   const newItem = {
@@ -308,16 +326,16 @@ async function save(mode: 'published' | 'draft') {
     featured:   form.featured,
     published:  mode === 'published' ? form.published : false,
     created_at: isEdit.value
-      ? ((allArtikel.value ?? []).find((i: any) => i.id === id.value)?.created_at || new Date().toISOString())
+      ? (current.find((i: any) => i.id === id.value)?.created_at || new Date().toISOString())
       : new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }
 
   let updated: any[]
   if (isEdit.value) {
-    updated = (allArtikel.value ?? []).map((i: any) => i.id === id.value ? newItem : i)
+    updated = current.map((i: any) => i.id === id.value ? newItem : i)
   } else {
-    updated = [...(allArtikel.value ?? []), newItem]
+    updated = [...current, newItem]
   }
 
   await $fetch('/api/admin/artikel', { method: 'POST', headers: authHeaders.value, body: updated })

@@ -85,11 +85,12 @@ export default defineNuxtConfig({
   app: {
     head: {
       charset: 'utf-8',
+      htmlAttrs: { lang: 'id' },
       viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
       title: 'Lakara Solusi Kreatif',
       meta: [
         { name: 'description', content: 'PT Lakara Solusi Kreatif — Mitra digital terpercaya untuk website development, mobile app, talent esports, dan social media growth.' },
-        { name: 'robots', content: 'index, follow' },
+        { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' },
         { property: 'og:site_name', content: 'Lakara Solusi Kreatif' },
         { property: 'og:type', content: 'website' },
         { name: 'twitter:card', content: 'summary_large_image' },
